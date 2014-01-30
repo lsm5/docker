@@ -44,6 +44,8 @@ type Container struct {
 	root   string // Path to the "home" of the container, including metadata.
 	basefs string // Path to the graphdriver mountpoint
 
+	execDriver execdriver.Driver
+
 	ID string
 
 	Created time.Time
@@ -466,7 +468,7 @@ func (container *Container) monitor(callback execdriver.StartCallback) error {
 	)
 
 	pipes := execdriver.NewPipes(container.stdin, container.stdout, container.stderr, container.Config.OpenStdin)
-	exitCode, err = container.daemon.Run(container, pipes, callback)
+	exitCode, err = container.execDriver.Run(container.command, pipes, callback)
 	if err != nil {
 		utils.Errorf("Error running container: %s", err)
 	}
@@ -541,7 +543,7 @@ func (container *Container) KillSig(sig int) error {
 	if !container.State.IsRunning() {
 		return nil
 	}
-	return container.daemon.Kill(container, sig)
+	return container.execDriver.Kill(container.command, sig)
 }
 
 func (container *Container) Kill() error {
