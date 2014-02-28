@@ -15,6 +15,8 @@ import (
 	"github.com/dotcloud/docker/engine"
 	"github.com/dotcloud/docker/opts"
 	flag "github.com/dotcloud/docker/pkg/mflag"
+	"github.com/dotcloud/docker/pkg/mount"
+	"github.com/dotcloud/docker/pkg/opts"
 	"github.com/dotcloud/docker/sysinit"
 	"github.com/dotcloud/docker/utils"
 )
@@ -28,6 +30,22 @@ const (
 var (
 	dockerConfDir = os.Getenv("HOME") + "/.docker/"
 )
+
+func initDockerLibMountpoint() error {
+	DOCKERLIB := "/var/lib/docker"
+
+	mounted, err := mount.Mounted(DOCKERLIB)
+	if err != nil {
+		return err
+	}
+
+	if !mounted {
+		if err := mount.Mount(DOCKERLIB, DOCKERLIB, "none", "bind,rw"); err != nil {
+			return err
+		}
+	}
+	return mount.ForceMount("", DOCKERLIB, "none", "private")
+}
 
 func main() {
 	if selfPath := utils.SelfPath(); strings.Contains(selfPath, ".dockerinit") {
@@ -156,6 +174,7 @@ func main() {
 			}
 		}()
 
+		initDockerLibMountpoint()
 		// Serve api
 		job := eng.Job("serveapi", flHosts.GetAll()...)
 		job.SetenvBool("Logging", true)
