@@ -9,7 +9,6 @@ import (
 	"path"
 )
 
-
 func NewDriver(name, root string, sysInfo *sysinfo.SysInfo) (execdriver.Driver, error) {
 	switch name {
 	case "lxc":

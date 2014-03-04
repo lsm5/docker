@@ -7,6 +7,7 @@ import (
 	"github.com/dotcloud/docker/archive"
 	"github.com/dotcloud/docker/engine"
 	"github.com/dotcloud/docker/execdriver"
+	"github.com/dotcloud/docker/execdriver/foreground"
 	"github.com/dotcloud/docker/graphdriver"
 	"github.com/dotcloud/docker/links"
 	"github.com/dotcloud/docker/nat"
@@ -546,6 +547,10 @@ func (container *Container) Start() (err error) {
 		return err
 	}
 	container.waitLock = make(chan struct{})
+
+	if container.hostConfig.CliAddress != "" {
+		container.execDriver = foreground.NewDriver(container.hostConfig.CliAddress, runtime.config.Root, runtime.execDriver)
+	}
 
 	callbackLock := make(chan struct{})
 	callback := func(command *execdriver.Command) {
