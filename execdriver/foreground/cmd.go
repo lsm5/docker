@@ -103,6 +103,7 @@ type CmdDriver struct {
 	Address    string
 	socketDir  string
 	stdin      bool
+	reuseUnit  bool
 	listener   *net.UnixListener
 	realDriver execdriver.Driver
 	numClients *Refcount
@@ -114,7 +115,7 @@ type CmdDriver struct {
 	exitCode    int
 }
 
-func NewCmdDriver(stdin bool) (*CmdDriver, error) {
+func NewCmdDriver(stdin, reuseUnit bool) (*CmdDriver, error) {
 	baseDir := "/var/run/docker-client"
 	if err := os.MkdirAll(baseDir, 0600); err != nil {
 		return nil, err
@@ -136,6 +137,7 @@ func NewCmdDriver(stdin bool) (*CmdDriver, error) {
 		Address:     address,
 		socketDir:   socketDir,
 		stdin:       stdin,
+		reuseUnit:   reuseUnit,
 		listener:    listener,
 		startedLock: make(chan int),
 		exitedLock:  make(chan int),
@@ -226,6 +228,7 @@ func (d *CmdDriver) Start(wrapper *CommandWrapper, res *int) error {
 	cmd.SysProcAttr.Setsid = false
 	cmd.Tty = false
 	cmd.Console = ""
+	cmd.Resources.ReuseUnit = d.reuseUnit
 
 	// We manually set Stdin here, to avoid SetTerminal overriding it with a pipe
 	// as we really want to inherit *the* stdin fd
