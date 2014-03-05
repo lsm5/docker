@@ -21,6 +21,7 @@ type Cgroup struct {
 	Memory       int64 `json:"memory,omitempty"`        // Memory limit (in bytes)
 	MemorySwap   int64 `json:"memory_swap,omitempty"`   // Total memory usage (memory + swap); set `-1' to disable swap
 	CpuShares    int64 `json:"cpu_shares,omitempty"`    // CPU shares (relative weight vs. other containers)
+	ReuseUnit    bool  `json:"reuse_unit"`              // Whether to reuse the current systemd unit for the resource limits
 }
 
 // https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt
@@ -147,10 +148,14 @@ func (c *Cgroup) systemdApply(pid int) error {
 		slice = "system-" + c.Parent + ".slice"
 	}
 
-	properties := []systemd.Property{
-		{"Slice", slice},
-		{"Description", "docker container " + c.Name},
-		{"PIDs", []uint32{uint32(pid)}},
+	properties := []systemd.Property{}
+
+	if !c.ReuseUnit {
+		properties = append(properties,
+			systemd.Property{"Slice", slice},
+			systemd.Property{"Description", "docker container " + c.Name},
+			systemd.Property{"PIDs", []uint32{uint32(pid)}},
+		)
 	}
 
 	if !c.DeviceAccess {
@@ -184,25 +189,44 @@ func (c *Cgroup) systemdApply(pid int) error {
 		properties = append(properties,
 			systemd.Property{"CPUShares", uint64(c.CpuShares)})
 	}
+
 	manager, err := systemd.GetManager()
 	if err != nil {
 		return err
 	}
 
-	if err := manager.StartTransientUnit(scope, "replace", properties); err != nil {
-		return err
-	}
+	var cgroup string
 
-	// To work around the lack of /dev/pts/* support above we need to manually add these
-	// so, ask systemd for the cgroup used
-	unit, err := manager.GetUnit(scope)
-	if err != nil {
-		return err
-	}
+	if c.ReuseUnit {
+		cgroup, err = GetThisCgroupDir("name=systemd")
+		if err != nil {
+			return err
+		}
 
-	cgroup, err := unit.GetProperty("org.freedesktop.systemd1.Scope", "ControlGroup")
-	if err != nil {
-		return err
+		unit := filepath.Base(cgroup)
+
+		if err := manager.SetUnitProperties(unit, true, properties); err != nil {
+			return err
+		}
+
+	} else {
+
+		if err := manager.StartTransientUnit(scope, "replace", properties); err != nil {
+			return err
+		}
+
+		// To work around the lack of /dev/pts/* support above we need to manually add these
+		// so, ask systemd for the cgroup used
+		unit, err := manager.GetUnit(scope)
+		if err != nil {
+			return err
+		}
+
+		cgroupI, err := unit.GetProperty("org.freedesktop.systemd1.Scope", "ControlGroup")
+		if err != nil {
+			return err
+		}
+		cgroup = cgroupI.(string)
 	}
 
 	if !c.DeviceAccess {
@@ -211,7 +235,7 @@ func (c *Cgroup) systemdApply(pid int) error {
 			return err
 		}
 
-		path := filepath.Join(mountpoint, cgroup.(string))
+		path := filepath.Join(mountpoint, cgroup)
 
 		// /dev/pts/*
 		if err := writeFile(path, "devices.allow", "c 136:* rwm"); err != nil {
