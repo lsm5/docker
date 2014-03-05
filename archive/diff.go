@@ -2,7 +2,7 @@ package archive
 
 import (
 	"fmt"
-	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
+	"archive/tar"
 	"io"
 	"io/ioutil"
 	"os"
