@@ -1734,9 +1734,11 @@ func (cli *DockerCli) CmdRun(args ...string) error {
 		flRm          = cmd.Lookup("rm")
 		flSigProxy    = cmd.Lookup("sig-proxy")
 		flForeground  = cmd.Lookup("foreground")
+		flReuseUnit   = cmd.Lookup("reuse-unit")
 		autoRemove, _ = strconv.ParseBool(flRm.Value.String())
 		sigProxy, _   = strconv.ParseBool(flSigProxy.Value.String())
 		fg, _         = strconv.ParseBool(flForeground.Value.String())
+		reuseUnit, _  = strconv.ParseBool(flReuseUnit.Value.String())
 	)
 
 	// Disable sigProxy in case on TTY
@@ -1760,9 +1762,13 @@ func (cli *DockerCli) CmdRun(args ...string) error {
 		containerValues.Set("name", name)
 	}
 
+	if reuseUnit && !fg {
+		return fmt.Errorf("-reuse-unit works only with -foreground")
+	}
+
 	var fgDriver *foreground.CmdDriver
 	if fg {
-		fgDriver, err = foreground.NewCmdDriver(config.AttachStdin)
+		fgDriver, err = foreground.NewCmdDriver(config.AttachStdin, reuseUnit)
 		if err != nil {
 			return err
 		}

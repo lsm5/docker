@@ -42,6 +42,7 @@ func createContainer(c *execdriver.Command) *libcontainer.Container {
 		container.Cgroups.CpuShares = c.Resources.CpuShares
 		container.Cgroups.Memory = c.Resources.Memory
 		container.Cgroups.MemorySwap = c.Resources.MemorySwap
+		container.Cgroups.ReuseUnit = c.Resources.ReuseUnit
 	}
 	return container
 }
