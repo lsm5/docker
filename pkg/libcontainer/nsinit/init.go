@@ -63,6 +63,9 @@ func (ns *linuxNs) Init(container *libcontainer.Container, uncleanRootfs, consol
 			return fmt.Errorf("parent death signal %s", err)
 		}
 	*/
+	if err := label.SetProcessLabel(container.ProcessLabel); err != nil {
+		return fmt.Errorf("SetProcessLabel label %s", err)
+	}
 	if err := setupNewMountNamespace(rootfs, console, container.ReadonlyFs, container.MountLabel); err != nil {
 		return fmt.Errorf("setup mount namespace %s", err)
 	}
@@ -154,9 +157,6 @@ func finalizeNamespace(container *libcontainer.Container) error {
 	}
 	if err := setupSocketActivation(); err != nil {
 		return fmt.Errorf("setupSocketActivation %s", err)
-	}
-	if err := label.SetProcessLabel(container.ProcessLabel); err != nil {
-		return fmt.Errorf("SetProcessLabel label %s", err)
 	}
 	if container.WorkingDir != "" {
 		if err := system.Chdir(container.WorkingDir); err != nil {
