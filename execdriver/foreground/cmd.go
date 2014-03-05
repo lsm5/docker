@@ -26,19 +26,21 @@ type CommandWrapper struct {
 	SysProcAttr *syscall.SysProcAttr
 
 	// From execdriver.Command:
-	ID         string
-	Privileged bool
-	User       string
-	Rootfs     string
-	InitPath   string
-	Entrypoint string
-	Arguments  []string
-	WorkingDir string
-	ConfigPath string
-	Tty        bool
-	Network    *execdriver.Network
-	Config     []string
-	Resources  *execdriver.Resources
+	ID           string
+	Privileged   bool
+	User         string
+	Rootfs       string
+	InitPath     string
+	Entrypoint   string
+	Arguments    []string
+	WorkingDir   string
+	ConfigPath   string
+	Tty          bool
+	Network      *execdriver.Network
+	Config       []string
+	Resources    *execdriver.Resources
+	MountLabel   string
+	ProcessLabel string
 
 	// Extra info
 	RealDriver string
@@ -48,19 +50,21 @@ type CommandWrapper struct {
 func (wrapper *CommandWrapper) Unwrap() *execdriver.Command {
 	d := &execdriver.Command{
 		// From execdriver.Command:
-		ID:         wrapper.ID,
-		Privileged: wrapper.Privileged,
-		User:       wrapper.User,
-		Rootfs:     wrapper.Rootfs,
-		InitPath:   wrapper.InitPath,
-		Entrypoint: wrapper.Entrypoint,
-		Arguments:  wrapper.Arguments,
-		WorkingDir: wrapper.WorkingDir,
-		ConfigPath: wrapper.ConfigPath,
-		Tty:        wrapper.Tty,
-		Network:    wrapper.Network,
-		Config:     wrapper.Config,
-		Resources:  wrapper.Resources,
+		ID:           wrapper.ID,
+		Privileged:   wrapper.Privileged,
+		User:         wrapper.User,
+		Rootfs:       wrapper.Rootfs,
+		InitPath:     wrapper.InitPath,
+		Entrypoint:   wrapper.Entrypoint,
+		Arguments:    wrapper.Arguments,
+		WorkingDir:   wrapper.WorkingDir,
+		ConfigPath:   wrapper.ConfigPath,
+		Tty:          wrapper.Tty,
+		Network:      wrapper.Network,
+		Config:       wrapper.Config,
+		Resources:    wrapper.Resources,
+		MountLabel:   wrapper.MountLabel,
+		ProcessLabel: wrapper.ProcessLabel,
 	}
 
 	// From exec.Cmd:
@@ -83,19 +87,21 @@ func WrapCommand(cmd *execdriver.Command) *CommandWrapper {
 		SysProcAttr: cmd.SysProcAttr,
 
 		// From execdriver.Command:
-		ID:         cmd.ID,
-		Privileged: cmd.Privileged,
-		User:       cmd.User,
-		Rootfs:     cmd.Rootfs,
-		InitPath:   cmd.InitPath,
-		Entrypoint: cmd.Entrypoint,
-		Arguments:  cmd.Arguments,
-		WorkingDir: cmd.WorkingDir,
-		ConfigPath: cmd.ConfigPath,
-		Tty:        cmd.Tty,
-		Network:    cmd.Network,
-		Config:     cmd.Config,
-		Resources:  cmd.Resources,
+		ID:           cmd.ID,
+		Privileged:   cmd.Privileged,
+		User:         cmd.User,
+		Rootfs:       cmd.Rootfs,
+		InitPath:     cmd.InitPath,
+		Entrypoint:   cmd.Entrypoint,
+		Arguments:    cmd.Arguments,
+		WorkingDir:   cmd.WorkingDir,
+		ConfigPath:   cmd.ConfigPath,
+		Tty:          cmd.Tty,
+		Network:      cmd.Network,
+		Config:       cmd.Config,
+		Resources:    cmd.Resources,
+		MountLabel:   cmd.MountLabel,
+		ProcessLabel: cmd.ProcessLabel,
 	}
 }
 
