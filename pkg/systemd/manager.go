@@ -155,6 +155,20 @@ func (m *Manager) StartTransientUnit(name, mode string, properties []Property) e
 	return nil
 }
 
+func (m *Manager) SetUnitProperties(name string, runtime bool, properties []Property) error {
+	dbusProperties := make([]dbusProperty, len(properties))
+	for i, p := range properties {
+		dbusProperties[i] = p.toDbus()
+	}
+
+	err := m.Call(method("Manager", "SetUnitProperties"), 0, name, runtime, dbusProperties).Store()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Manager) GetUnit(name string) (*Unit, error) {
 	var path dbus.ObjectPath
 
