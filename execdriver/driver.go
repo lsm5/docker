@@ -99,6 +99,7 @@ type Resources struct {
 	Memory     int64 `json:"memory"`
 	MemorySwap int64 `json:"memory_swap"`
 	CpuShares  int64 `json:"cpu_shares"`
+	ReuseUnit  bool  `json:"reuse_unit"`
 }
 
 // Process wrapps an os/exec.Cmd to add more metadata
