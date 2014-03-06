@@ -207,7 +207,6 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 
 	// collect all the environment variables for the container
 	envVariables := []string{}
-	envVariables = append(envVariables, flEnv.GetAll()...)
 	for _, ef := range flEnvFile.GetAll() {
 		parsedVars, err := opts.ParseEnvFile(ef)
 		if err != nil {
@@ -215,6 +214,8 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		}
 		envVariables = append(envVariables, parsedVars...)
 	}
+	// parse the '-e' and '--env' after, to allow override
+	envVariables = append(envVariables, flEnv.GetAll()...)
 	// boo, there's no debug output for docker run
 	//utils.Debugf("Environment variables for the container: %#v", envVariables)
 
