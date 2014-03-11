@@ -39,6 +39,7 @@ type CommandWrapper struct {
 	Network    *execdriver.Network
 	Config     []string
 	Resources  *execdriver.Resources
+	Context    execdriver.Context
 
 	// Extra info
 	RealDriver string
@@ -61,6 +62,7 @@ func (wrapper *CommandWrapper) Unwrap() *execdriver.Command {
 		Network:    wrapper.Network,
 		Config:     wrapper.Config,
 		Resources:  wrapper.Resources,
+		Context:    wrapper.Context,
 	}
 
 	// From exec.Cmd:
@@ -96,6 +98,7 @@ func WrapCommand(cmd *execdriver.Command) *CommandWrapper {
 		Network:    cmd.Network,
 		Config:     cmd.Config,
 		Resources:  cmd.Resources,
+		Context:    cmd.Context,
 	}
 }
 
