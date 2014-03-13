@@ -8,7 +8,7 @@ func TestParseLxcConfOpt(t *testing.T) {
 	opts := []string{"lxc.utsname=docker", "lxc.utsname = docker "}
 
 	for _, o := range opts {
-		k, v, err := parseLxcOpt(o)
+		k, v, err := parseKeyValueOpt(o)
 		if err != nil {
 			t.FailNow()
 		}

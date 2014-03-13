@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/dotcloud/docker/runtime/execdriver"
+	"github.com/dotcloud/docker/utils"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -75,9 +76,11 @@ func TestCustomLxcConfig(t *testing.T) {
 	command := &execdriver.Command{
 		ID:         "1",
 		Privileged: false,
-		Config: []string{
-			"lxc.utsname = docker",
-			"lxc.cgroup.cpuset.cpus = 0,1",
+		Config: map[string]utils.KeyValuePairs{
+			"lxc": {
+				{"lxc.utsname", "docker"},
+				{"lxc.cgroup.cpuset.cpus", "0,1"},
+			},
 		},
 		Network: &execdriver.Network{
 			Mtu:       1500,
