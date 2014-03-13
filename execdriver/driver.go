@@ -2,6 +2,7 @@ package execdriver
 
 import (
 	"errors"
+	"github.com/dotcloud/docker/utils"
 	"io"
 	"os"
 	"os/exec"
@@ -124,9 +125,9 @@ type Command struct {
 	Context    Context    `json:"context"`     // generic context for specific options (apparmor, selinux)
 	Tty        bool       `json:"tty"`
 	Network    *Network   `json:"network"` // if network is nil then networking is disabled
-	Config     []string   `json:"config"`  //  generic values that specific drivers can consume
 	Resources  *Resources `json:"resources"`
 	Mounts     []Mount    `json:"mounts"`
+	Config     map[string]utils.KeyValuePairs `json:"config"`  //  generic values that specific drivers can consume
 
 	Terminal     Terminal `json:"-"`             // standard or tty terminal
 	Console      string   `json:"-"`             // dev/console path
