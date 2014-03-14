@@ -54,6 +54,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	var pid, exitCode, dummy int
 	err = client.Call("CmdDriver.Start", wrapper, &pid)
 	if pid != -1 {
+        c.ContainerPid = pid
 		c.Process, _ = os.FindProcess(pid)
 		if startCallback != nil {
 			startCallback(c)
