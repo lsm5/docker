@@ -8,6 +8,10 @@ import (
 	"os/exec"
 )
 
+// Context is a generic key value pair that allows
+// arbatrary data to be sent
+type Context map[string]string
+
 var (
 	ErrNotRunning              = errors.New("Process could not be started")
 	ErrWaitTimeoutReached      = errors.New("Wait timeout reached")
@@ -113,6 +117,7 @@ type Mount struct {
 type Command struct {
 	exec.Cmd `json:"-"`
 
+<<<<<<< HEAD:runtime/execdriver/driver.go
 	ID         string                         `json:"id"`
 	Privileged bool                           `json:"privileged"`
 	User       string                         `json:"user"`
@@ -127,6 +132,23 @@ type Command struct {
 	Config     map[string]utils.KeyValuePairs `json:"config"` //  generic values that specific drivers can consume
 	Resources  *Resources                     `json:"resources"`
 	Mounts     []Mount                        `json:"mounts"`
+=======
+	ID         string     `json:"id"`
+	Privileged bool       `json:"privileged"`
+	User       string     `json:"user"`
+	Rootfs     string     `json:"rootfs"`   // root fs of the container
+	InitPath   string     `json:"initpath"` // dockerinit
+	Entrypoint string     `json:"entrypoint"`
+	Arguments  []string   `json:"arguments"`
+	WorkingDir string     `json:"working_dir"`
+	ConfigPath string     `json:"config_path"` // this should be able to be removed when the lxc template is moved into the driver
+	Context    Context    `json:"context"`     // generic context for specific options (apparmor, selinux)
+	Tty        bool       `json:"tty"`
+	Network    *Network   `json:"network"` // if network is nil then networking is disabled
+	Config     []string   `json:"config"`  //  generic values that specific drivers can consume
+	Resources  *Resources `json:"resources"`
+	Mounts     []Mount    `json:"mounts"`
+>>>>>>> 05f58d7... This patch adds SELinux labeling support.:execdriver/driver.go
 
 	Terminal     Terminal `json:"-"`             // standard or tty terminal
 	Console      string   `json:"-"`             // dev/console path

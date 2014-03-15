@@ -157,6 +157,7 @@ AppArmor, you will need to set `DOCKER_BUILDTAGS` as follows:
 export DOCKER_BUILDTAGS='apparmor'
 ```
 
+<<<<<<< HEAD
 There are build tags for disabling graphdrivers as well. By default, support
 for all graphdrivers are built in.
 
@@ -177,6 +178,15 @@ export DOCKER_BUILDTAGS='exclude_graphdriver_aufs'
 
 NOTE: if you need to set more than one build tag, space separate them.
 
+=======
+If you're building a binary that may need to be used on platforms that include
+SELinux, you will need to set `DOCKER_BUILDTAGS` as follows:
+
+```bash
+export DOCKER_BUILDTAGS='selinux'
+```
+
+>>>>>>> 05f58d7... This patch adds SELinux labeling support.
 ### Static Daemon
 
 If it is feasible within the constraints of your distribution, you should

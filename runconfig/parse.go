@@ -2,8 +2,10 @@ package runconfig
 
 import (
 	"fmt"
+	"github.com/dotcloud/docker/execdriver"
 	"github.com/dotcloud/docker/nat"
 	"github.com/dotcloud/docker/opts"
+	"github.com/dotcloud/docker/pkg/label"
 	flag "github.com/dotcloud/docker/pkg/mflag"
 	"github.com/dotcloud/docker/pkg/sysinfo"
 	"github.com/dotcloud/docker/utils"
@@ -62,11 +64,15 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		flUser            = cmd.String([]string{"u", "-user"}, "", "Username or UID")
 		flWorkingDir      = cmd.String([]string{"w", "-workdir"}, "", "Working directory inside the container")
 		flCpuShares       = cmd.Int64([]string{"c", "-cpu-shares"}, 0, "CPU shares (relative weight)")
+		flLabelOptions    = cmd.String([]string{"Z", "-label"}, "", "Options to pass to underlying labeling system")
 
 		// For documentation purpose
 		_ = cmd.Bool([]string{"#sig-proxy", "-sig-proxy"}, true, "Proxify all received signal to the process (even in non-tty mode)")
 		_ = cmd.String([]string{"#name", "-name"}, "", "Assign a name to the container")
 		_ = cmd.Bool([]string{"#foreground", "-foreground"}, false, "Run in foreground")
+
+		processLabel string
+		mountLabel   string
 	)
 
 	cmd.Var(&flAttach, []string{"a", "-attach"}, "Attach to stdin, stdout or stderr.")
@@ -154,15 +160,22 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		entrypoint = []string{*flEntrypoint}
 	}
 
-	lxcConf, err := parseKeyValueOpts(flLxcOpts)
+	if !*flPrivileged {
+		pLabel, mLabel, e := label.GenLabels(*flLabelOptions)
+		if e != nil {
+			return nil, nil, cmd, fmt.Errorf("Invalid security labels : %s", e)
+		}
+		processLabel = pLabel
+		mountLabel = mLabel
+	}
+
+	lxcConf, err := parseLxcConfOpts(flLxcOpts)
+
 	if err != nil {
 		return nil, nil, cmd, err
 	}
 
 	unitConf, err := parseKeyValueOpts(flUnitOpts)
-	if err != nil {
-		return nil, nil, cmd, err
-	}
 
 	var (
 		domainname string
@@ -224,6 +237,10 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		VolumesFrom:     strings.Join(flVolumesFrom.GetAll(), ","),
 		Entrypoint:      entrypoint,
 		WorkingDir:      *flWorkingDir,
+		Context: execdriver.Context{
+			"MountLabel":   mountLabel,
+			"ProcessLabel": processLabel,
+		},
 	}
 
 	hostConfig := &HostConfig{

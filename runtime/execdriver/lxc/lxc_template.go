@@ -1,7 +1,12 @@
 package lxc
 
 import (
+<<<<<<< HEAD:runtime/execdriver/lxc/lxc_template.go
 	"github.com/dotcloud/docker/runtime/execdriver"
+=======
+	"github.com/dotcloud/docker/execdriver"
+	"github.com/dotcloud/docker/pkg/label"
+>>>>>>> 05f58d7... This patch adds SELinux labeling support.:execdriver/lxc/lxc_template.go
 	"strings"
 	"text/template"
 )
@@ -29,6 +34,9 @@ lxc.pts = 1024
 
 # disable the main console
 lxc.console = none
+{{if .ProcessLabel}}
+lxc.se_context = {{.ProcessLabel}}
+{{end}}
 
 # no controlling tty at all
 lxc.tty = 1
@@ -85,8 +93,8 @@ lxc.mount.entry = sysfs {{escapeFstabSpaces $ROOTFS}}/sys sysfs nosuid,nodev,noe
 lxc.mount.entry = {{.Console}} {{escapeFstabSpaces $ROOTFS}}/dev/console none bind,rw 0 0
 {{end}}
 
-lxc.mount.entry = devpts {{escapeFstabSpaces $ROOTFS}}/dev/pts devpts newinstance,ptmxmode=0666,nosuid,noexec 0 0
-lxc.mount.entry = shm {{escapeFstabSpaces $ROOTFS}}/dev/shm tmpfs size=65536k,nosuid,nodev,noexec 0 0
+lxc.mount.entry = devpts {{escapeFstabSpaces $ROOTFS}}/dev/pts devpts {{formatMountLabel "newinstance,ptmxmode=0666,nosuid,noexec" .MountLabel}} 0 0
+lxc.mount.entry = shm {{escapeFstabSpaces $ROOTFS}}/dev/shm tmpfs {{formatMountLabel "size=65536k,nosuid,nodev,noexec" .MountLabel}} 0 0
 
 {{range $value := .Mounts}}
 {{if $value.Writable}}
@@ -147,6 +155,7 @@ func init() {
 	funcMap := template.FuncMap{
 		"getMemorySwap":     getMemorySwap,
 		"escapeFstabSpaces": escapeFstabSpaces,
+		"formatMountLabel":  label.FormatMountLabel,
 	}
 	LxcTemplateCompiled, err = template.New("lxc").Funcs(funcMap).Parse(LxcTemplate)
 	if err != nil {
