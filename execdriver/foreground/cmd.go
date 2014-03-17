@@ -37,7 +37,7 @@ type CommandWrapper struct {
 	ConfigPath string
 	Tty        bool
 	Network    *execdriver.Network
-	Config     []string
+	Config     map[string]utils.KeyValuePairs
 	Resources  *execdriver.Resources
 
 	// Extra info
