@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/dotcloud/docker/pkg/systemd"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 type systemdCgroup struct {
@@ -18,9 +20,20 @@ func useSystemd() bool {
 	return manager != nil && manager.HasStartTransientUnit
 }
 
+func getIfaceForUnit(unitName string) string {
+	if strings.HasSuffix(unitName, ".scope") {
+		return "org.freedesktop.systemd1.Scope"
+	}
+	if strings.HasSuffix(unitName, ".service") {
+		return "org.freedesktop.systemd1.Service"
+	}
+	return "org.freedesktop.systemd1.Unit"
+}
+
 func systemdApply(c *Cgroup, pid int) (ActiveCgroup, error) {
 	unitName := c.Parent + "-" + c.Name + ".scope"
 	slice := "system.slice"
+	reuseUnit := false
 
 	properties := []systemd.Property{}
 
@@ -28,15 +41,32 @@ func systemdApply(c *Cgroup, pid int) (ActiveCgroup, error) {
 		switch v[0] {
 		case "Slice":
 			slice = v[1]
+		case "ReuseCurrent":
+			reuseCurrent, err := strconv.ParseBool(v[1])
+			if err != nil {
+				return nil, err
+			}
+
+			if reuseCurrent {
+				cgroup, err := GetThisCgroupDir("name=systemd")
+				if err != nil {
+					return nil, err
+				}
+
+				reuseUnit = true
+				unitName = filepath.Base(cgroup)
+			}
 		default:
 			return nil, fmt.Errorf("Unknown unit propery %s", v[0])
 		}
 	}
 
-	properties = append(properties,
-		systemd.Property{"Slice", slice},
-		systemd.Property{"Description", "docker container " + c.Name},
-		systemd.Property{"PIDs", []uint32{uint32(pid)}})
+	if !reuseUnit {
+		properties = append(properties,
+			systemd.Property{"Slice", slice},
+			systemd.Property{"Description", "docker container " + c.Name},
+			systemd.Property{"PIDs", []uint32{uint32(pid)}})
+	}
 
 	if !c.DeviceAccess {
 		properties = append(properties,
@@ -73,8 +103,14 @@ func systemdApply(c *Cgroup, pid int) (ActiveCgroup, error) {
 		return nil, err
 	}
 
-	if err := manager.StartTransientUnit(unitName, "replace", properties); err != nil {
-		return nil, err
+	if reuseUnit {
+		if err := manager.SetUnitProperties(unitName, true, properties); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := manager.StartTransientUnit(unitName, "replace", properties); err != nil {
+			return nil, err
+		}
 	}
 
 	// To work around the lack of /dev/pts/* support above we need to manually add these
@@ -84,7 +120,7 @@ func systemdApply(c *Cgroup, pid int) (ActiveCgroup, error) {
 		return nil, err
 	}
 
-	cgroup, err := unit.GetProperty("org.freedesktop.systemd1.Scope", "ControlGroup")
+	cgroup, err := unit.GetProperty(getIfaceForUnit(unitName), "ControlGroup")
 	if err != nil {
 		return nil, err
 	}
