@@ -2,7 +2,7 @@ package runconfig
 
 import (
 	"fmt"
-	"github.com/dotcloud/docker/execdriver"
+	"github.com/dotcloud/docker/runtime/execdriver"
 	"github.com/dotcloud/docker/nat"
 	"github.com/dotcloud/docker/opts"
 	"github.com/dotcloud/docker/pkg/label"
@@ -160,6 +160,8 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		entrypoint = []string{*flEntrypoint}
 	}
 
+    lxcConf, err := parseKeyValueOpts(flLxcOpts)
+
 	if !*flPrivileged {
 		pLabel, mLabel, e := label.GenLabels(*flLabelOptions)
 		if e != nil {
@@ -169,7 +171,6 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		mountLabel = mLabel
 	}
 
-	lxcConf, err := parseLxcConfOpts(flLxcOpts)
 
 	if err != nil {
 		return nil, nil, cmd, err

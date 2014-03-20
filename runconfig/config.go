@@ -3,7 +3,7 @@ package runconfig
 import (
 	"encoding/json"
 	"github.com/dotcloud/docker/engine"
-	"github.com/dotcloud/docker/execdriver"
+	"github.com/dotcloud/docker/runtime/execdriver"
 	"github.com/dotcloud/docker/nat"
 )
 
