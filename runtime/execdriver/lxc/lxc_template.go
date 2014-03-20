@@ -1,12 +1,9 @@
 package lxc
 
 import (
-<<<<<<< HEAD:runtime/execdriver/lxc/lxc_template.go
 	"github.com/dotcloud/docker/runtime/execdriver"
-=======
 	"github.com/dotcloud/docker/execdriver"
 	"github.com/dotcloud/docker/pkg/label"
->>>>>>> 05f58d7... This patch adds SELinux labeling support.:execdriver/lxc/lxc_template.go
 	"strings"
 	"text/template"
 )
