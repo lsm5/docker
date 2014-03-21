@@ -17,13 +17,28 @@ type HostConfig struct {
 	Dns             []string
 	DnsSearch       []string
 	VolumesFrom     []string
+	CliAddress      string
 }
 
-func ContainerHostConfigFromJob(job *engine.Job) *HostConfig {
+type HostConfigForeground struct {
+	CliAddressOnly string
+}
+
+func ContainerHostConfigFromJob(job *engine.Job, oldHostConfig *HostConfig) *HostConfig {
+	if job.EnvExists("CliAddressOnly") {
+		hostConfig := HostConfig{}
+		if oldHostConfig != nil {
+			hostConfig = *oldHostConfig
+		}
+		hostConfig.CliAddress = job.Getenv("CliAddressOnly")
+		return &hostConfig
+	}
+
 	hostConfig := &HostConfig{
 		ContainerIDFile: job.Getenv("ContainerIDFile"),
 		Privileged:      job.GetenvBool("Privileged"),
 		PublishAllPorts: job.GetenvBool("PublishAllPorts"),
+		CliAddress:      job.Getenv("CliAddress"),
 	}
 	job.GetenvJson("LxcConf", &hostConfig.LxcConf)
 	job.GetenvJson("PortBindings", &hostConfig.PortBindings)
