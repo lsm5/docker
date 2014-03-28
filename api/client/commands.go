@@ -21,7 +21,6 @@ import (
 	"text/template"
 	"time"
 
-	flag "github.com/dotcloud/docker/pkg/mflag"
 	"github.com/dotcloud/docker/runtime/execdriver/foreground"
 	"github.com/dotcloud/docker/api"
 	"github.com/dotcloud/docker/archive"
