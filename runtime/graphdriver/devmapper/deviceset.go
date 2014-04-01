@@ -47,6 +47,11 @@ type DevInfo struct {
 	// sometimes release that lock while sleeping. In that case
 	// this per-device lock is still held, protecting against
 	// other accesses to the device that we're doing the wait on.
+	//
+	// WARNING: In order to avoid AB-BA deadlocks when releasing
+	// the global lock while holding the per-device locks all
+	// device locks must be aquired *before* the device lock, and
+	// multiple device locks should be aquired parent before child.
 	lock sync.Mutex `json:"-"`
 }
 
@@ -580,13 +585,6 @@ func (devices *DeviceSet) initDevmapper(doInit bool) error {
 }
 
 func (devices *DeviceSet) AddDevice(hash, baseHash string) error {
-	devices.Lock()
-	defer devices.Unlock()
-
-	if info, _ := devices.lookupDevice(hash); info != nil {
-		return fmt.Errorf("device %s already exists", hash)
-	}
-
 	baseInfo, err := devices.lookupDevice(baseHash)
 	if err != nil {
 		return err
@@ -594,6 +592,13 @@ func (devices *DeviceSet) AddDevice(hash, baseHash string) error {
 
 	baseInfo.lock.Lock()
 	defer baseInfo.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
+
+	if info, _ := devices.lookupDevice(hash); info != nil {
+		return fmt.Errorf("device %s already exists", hash)
+	}
 
 	deviceId := devices.allocateDeviceId()
 
@@ -658,9 +663,6 @@ func (devices *DeviceSet) deleteDevice(info *DevInfo) error {
 }
 
 func (devices *DeviceSet) DeleteDevice(hash string) error {
-	devices.Lock()
-	defer devices.Unlock()
-
 	info, err := devices.lookupDevice(hash)
 	if err != nil {
 		return err
@@ -668,6 +670,9 @@ func (devices *DeviceSet) DeleteDevice(hash string) error {
 
 	info.lock.Lock()
 	defer info.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
 
 	return devices.deleteDevice(info)
 }
@@ -802,8 +807,6 @@ func (devices *DeviceSet) waitClose(info *DevInfo) error {
 }
 
 func (devices *DeviceSet) Shutdown() error {
-	devices.Lock()
-	defer devices.Unlock()
 
 	utils.Debugf("[deviceset %s] shutdown()", devices.devicePrefix)
 	utils.Debugf("[devmapper] Shutting down DeviceSet: %s", devices.root)
@@ -827,9 +830,11 @@ func (devices *DeviceSet) Shutdown() error {
 				utils.Debugf("Shutdown unmounting %s, error: %s\n", info.mountPath, err)
 			}
 
+			devices.Lock()
 			if err := devices.deactivateDevice(info); err != nil {
 				utils.Debugf("Shutdown deactivate %s , error: %s\n", info.Hash, err)
 			}
+			devices.Unlock()
 		}
 		info.lock.Unlock()
 	}
@@ -837,22 +842,25 @@ func (devices *DeviceSet) Shutdown() error {
 
 	info, _ := devices.lookupDevice("")
 	if info != nil {
+		info.lock.Lock()
+		devices.Lock()
 		if err := devices.deactivateDevice(info); err != nil {
 			utils.Debugf("Shutdown deactivate base , error: %s\n", err)
 		}
+		devices.Unlock()
+		info.lock.Unlock()
 	}
 
+	devices.Lock()
 	if err := devices.deactivatePool(); err != nil {
 		utils.Debugf("Shutdown deactivate pool , error: %s\n", err)
 	}
+	devices.Unlock()
 
 	return nil
 }
 
 func (devices *DeviceSet) MountDevice(hash, path string, mountLabel string) error {
-	devices.Lock()
-	defer devices.Unlock()
-
 	info, err := devices.lookupDevice(hash)
 	if err != nil {
 		return err
@@ -860,6 +868,9 @@ func (devices *DeviceSet) MountDevice(hash, path string, mountLabel string) erro
 
 	info.lock.Lock()
 	defer info.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
 
 	if info.mountCount > 0 {
 		if path != info.mountPath {
@@ -901,8 +912,6 @@ func (devices *DeviceSet) MountDevice(hash, path string, mountLabel string) erro
 func (devices *DeviceSet) UnmountDevice(hash string, mode UnmountMode) error {
 	utils.Debugf("[devmapper] UnmountDevice(hash=%s, mode=%d)", hash, mode)
 	defer utils.Debugf("[devmapper] UnmountDevice END")
-	devices.Lock()
-	defer devices.Unlock()
 
 	info, err := devices.lookupDevice(hash)
 	if err != nil {
@@ -911,6 +920,9 @@ func (devices *DeviceSet) UnmountDevice(hash string, mode UnmountMode) error {
 
 	info.lock.Lock()
 	defer info.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
 
 	if mode == UnmountFloat {
 		if info.floating {
@@ -972,9 +984,6 @@ func (devices *DeviceSet) HasInitializedDevice(hash string) bool {
 }
 
 func (devices *DeviceSet) HasActivatedDevice(hash string) bool {
-	devices.Lock()
-	defer devices.Unlock()
-
 	info, _ := devices.lookupDevice(hash)
 	if info == nil {
 		return false
@@ -982,6 +991,9 @@ func (devices *DeviceSet) HasActivatedDevice(hash string) bool {
 
 	info.lock.Lock()
 	defer info.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
 
 	devinfo, _ := getInfo(info.Name())
 	return devinfo != nil && devinfo.Exists != 0
@@ -1027,9 +1039,6 @@ func (devices *DeviceSet) deviceStatus(devName string) (sizeInSectors, mappedSec
 }
 
 func (devices *DeviceSet) GetDeviceStatus(hash string) (*DevStatus, error) {
-	devices.Lock()
-	defer devices.Unlock()
-
 	info, err := devices.lookupDevice(hash)
 	if err != nil {
 		return nil, err
@@ -1037,6 +1046,9 @@ func (devices *DeviceSet) GetDeviceStatus(hash string) (*DevStatus, error) {
 
 	info.lock.Lock()
 	defer info.lock.Unlock()
+
+	devices.Lock()
+	defer devices.Unlock()
 
 	status := &DevStatus{
 		DeviceId:      info.DeviceId,
