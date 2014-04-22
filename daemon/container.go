@@ -12,6 +12,7 @@ import (
 	"github.com/dotcloud/docker/image"
 	"github.com/dotcloud/docker/links"
 	"github.com/dotcloud/docker/nat"
+	"github.com/dotcloud/docker/pkg/selinux"
 	"github.com/dotcloud/docker/runconfig"
 	"github.com/dotcloud/docker/utils"
 	"github.com/dotcloud/docker/pkg/label"
@@ -70,7 +71,11 @@ type Container struct {
 	stdinPipe io.WriteCloser
 
 	daemon                   *Daemon
+<<<<<<< HEAD
 	MountLabel, ProcessLabel string
+=======
+	mountLabel, processLabel string
+>>>>>>> This has every container using the docker daemon's pid for the processes
 
 	waitLock chan struct{}
 	Volumes  map[string]string
@@ -395,6 +400,12 @@ func (container *Container) Start() (err error) {
 	if err := container.setupContainerDns(); err != nil {
 		return err
 	}
+
+	process, mount := selinux.GetLxcContexts()
+
+	container.mountLabel = mount
+	container.processLabel = process
+
 	if err := container.Mount(); err != nil {
 		return err
 	}
