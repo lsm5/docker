@@ -256,6 +256,7 @@ func (container *Container) Start() (err error) {
 	if err := container.setupContainerDns(); err != nil {
 		return err
 	}
+
 	if err := container.Mount(); err != nil {
 		return err
 	}
