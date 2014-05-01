@@ -65,26 +65,6 @@ func (d *Driver) Create(id, parent string) error {
 	if err := d.DeviceSet.AddDevice(id, parent); err != nil {
 		return err
 	}
-<<<<<<< HEAD
-=======
-	mp := path.Join(d.home, "mnt", id)
-	// TODO: @alex  why do we mount here and is this even needed @crosbymichael
-	if err := d.mount(id, mp, ""); err != nil {
-		return err
-	}
-	if err := osMkdirAll(path.Join(mp, "rootfs"), 0755); err != nil && !osIsExist(err) {
-		return err
-	}
-
-	// Create an "id" file with the container/image id in it to help reconscruct this in case
-	// of later problems
-	if err := ioutil.WriteFile(path.Join(mp, "id"), []byte(id), 0600); err != nil {
-		return err
-	}
-	if err := d.DeviceSet.UnmountDevice(id, UnmountRegular); err != nil {
-		return err
-	}
->>>>>>> This has every container using the docker daemon's pid for the processes
 
 	return nil
 }
