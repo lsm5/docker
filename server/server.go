@@ -1586,6 +1586,10 @@ func (srv *Server) ImagePush(job *engine.Job) engine.Status {
 		return job.Error(err)
 	}
 
+	if hostname == registry.IndexServerAddress() && !strings.Contains(localName, "index.docker.io") {
+		return job.Error(fmt.Errorf("Default pushes to index.docker.io are disabled in this beta, push to a local registry or \"index.docker.io/%s\" instead", remoteName))
+	}
+
 	endpoint, err := registry.ExpandAndVerifyRegistryUrl(hostname)
 	if err != nil {
 		return job.Error(err)
