@@ -116,7 +116,7 @@ func createIfNotExists(path string, isDir bool) error {
 				if err != nil {
 					return err
 				}
-				f.Close()
+				defer f.Close()
 			}
 		}
 	}
