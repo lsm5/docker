@@ -1,10 +1,9 @@
-dockerfiles-sct-mariadb
+dockerfiles-rhel-MariaDB
 ========================
 
-Tested on Docker 0.8.1
-Based on scollier's mysql dockerfile.
+Tested on Docker 0.10.0-dev
 
-This repo contains a recipe for making Docker container for mariadb on Fedora. 
+This repo contains a recipe for making Docker container for MariaDB on Red Hat Enterprise Linux. 
 
 Check your Docker version
 
@@ -12,7 +11,7 @@ Check your Docker version
 
 Perform the build
 
-    # docker build -rm -t <yourname>/mariadb .
+    # docker build -rm -t <yourname>/MariaDB .
 
 Check the image out.
 
@@ -20,35 +19,31 @@ Check the image out.
 
 Run it:
 
-    # docker run --name=mariadb -d -p 3306:3306 <yourname>/mariadb
+    # docker run -d -p 3306:3306 <yourname>/MariaDB
 
-Keep in mind the initial password set for mariadb is: mysqlPassword.  Change it now:
+Get container ID:
 
-    # mysqladmin -u testdb -pmysqlPassword password myNewPass
+    # docker ps
 
-For mariadb:
-    # mysql -utestdb -pmyNewPass
+Keep in mind the password set for MariaDB is: mariadbPassword
+
+Get the IP address for the container:
+
+    # docker inspect <container_id> | grep -i ipaddr
+
+For MySQL:
+
+    # mysql -h 172.17.0.x -utestdb -pmariadbPassword
 
 Create a table:
 
-    \> CREATE TABLE test (name VARCHAR(10), owner VARCHAR(10),
-        -> species VARCHAR(10), birth DATE, death DATE);
+```
+\> show databases;
 
+\> use test;
 
-To use a separate data volume for /var/lib/mysql (recommended, to allow image update without
-losing database contents):
+\> CREATE TABLE test (name VARCHAR(10), owner VARCHAR(10),
+    -> species VARCHAR(10), birth DATE, death DATE);
 
-
-Create a data volume container: (it doesn't matter what image you use
-here, we'll never run this container again; it's just here to
-reference the data volume)
-
-    # docker run --name=mariadb-data -v /var/lib/mysql fedora true
-
-Initialise it using a temporary one-time mariadb container:
-
-    # docker run -rm --volumes-from=mariadb-data <yourname>/mariadb /config_mariadb.sh
-
-And now create the new persistent mariadb container:
-
-    # docker run --name=mariadb -d -p 3306:3306 --volumes-from=mariadb-data <yourname>/mariadb
+\> show tables;
+```

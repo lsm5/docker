@@ -1,6 +1,0 @@
-Step 0 : FROM 10.3.13.125:5000/brew/rhel7:latest
- ---> 92c518a45f11
-Step 1 : MAINTAINER Stephen Tweedie <sct@redhat.com>
- ---> Using cache
- ---> 13847f110749
-Step 2 : RUN yum -y update; yum clean all
