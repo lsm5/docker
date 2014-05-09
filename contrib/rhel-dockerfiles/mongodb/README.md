@@ -1,9 +1,9 @@
-dockerfiles-fedora-mongodb
+dockerfiles-rhel-mongodb
 ========================
 
-Fedora dockerfile for MongoDB
+Red Hat Enterprise Linux dockerfile for MongoDB
 
-Tested on Docker 0.7.2
+Tested on Docker 0.10.0-dev
 
 Get the version of Docker
 
