@@ -1,4 +1,4 @@
-FROM 10.3.13.125:5000/brew/rhel7:latest
+FROM registry.access.redhat.com/redhat/rhel7beta
 MAINTAINER scollier <scollier@redhat.com>
 
 # Update the system
