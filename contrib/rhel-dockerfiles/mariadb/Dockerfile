@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/redhat/rhel7beta
 MAINTAINER scollier <scollier@redhat.com>
 
 RUN yum -y update; yum clean all
-RUN yum -y install mariadb-server mariadb pwgen psmisc; yum clean all
+RUN yum -y install net-tools psmisc mariadb-server mariadb; yum clean all
 
 ADD ./config_mariadb.sh /config_mariadb.sh
 
