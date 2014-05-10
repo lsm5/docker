@@ -1,4 +1,4 @@
-FROM 10.3.13.125:5000/brew/rhel7:latest
+FROM registry.access.redhat.com/redhat/rhel7beta
 MAINTAINER "Scott Collier" <scollier@redhat.com>
 
 RUN yum -y update; yum clean all
