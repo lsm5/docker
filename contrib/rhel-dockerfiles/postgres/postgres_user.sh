@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 __mod_user() {
 usermod -G wheel postgres
