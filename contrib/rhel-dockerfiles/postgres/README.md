@@ -1,9 +1,9 @@
-dockerfiles-fedora-postgres
+dockerfiles-rhel-postgres
 ===========================
 
-Fedora dockerfile for PostgreSQL
+Red Hat Enterprise Linux dockerfile for PostgreSQL
 
-Tested on Docker 0.7.2
+Tested on Docker 0.10.0-dev
 
 1.	To build
 
@@ -26,14 +26,13 @@ To see the random port that the container is listening on:
     # docker ps
 
 3.	To test 
-
 To find the IP address, get the container ID:
 
     # docker ps
 
 Then get the IP addr:
 
-    # docker inspect 7a1e1a80e948 | grep -i ipaddress
+    # docker inspect --format '{{ .NetworkSettings.IPAddress }}' deb \<Container ID\>
 
 Now connect to the database.  In this case, it's called 'dockerdb' and the
 username is 'dockeruser' with a password of 'password', which was set via the

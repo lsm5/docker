@@ -1,4 +1,4 @@
-FROM 10.3.13.125:5000/brew/rhel7:latest
+FROM registry.access.redhat.com/redhat/rhel7beta
 MAINTAINER scollier <scollier@redhat.com>
 
 RUN yum -y update; yum clean all
@@ -6,11 +6,8 @@ RUN yum -y install postgresql-server postgresql postgresql-contrib supervisor; y
 
 ADD ./postgresql-setup /usr/bin/postgresql-setup
 ADD ./postgres_user.sh /postgres_user.sh
-ADD ./supervisord.conf /etc/supervisord.conf
-ADD ./start_postgres.sh /start_postgres.sh
 
 RUN chmod +x /usr/bin/postgresql-setup
-RUN chmod +x /start_postgres.sh
 RUN chmod +x /postgres_user.sh
 
 RUN /usr/bin/postgresql-setup initdb
@@ -25,4 +22,5 @@ RUN /postgres_user.sh
 
 EXPOSE 5432
 
-CMD ["/bin/bash", "/start_postgres.sh"]
+USER postgres
+CMD [ "/usr/bin/postgres", "-D", "/var/lib/pgsql/data", "-p", "5432" ]
