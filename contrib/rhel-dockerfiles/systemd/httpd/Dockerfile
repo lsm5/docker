@@ -14,8 +14,9 @@ rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
 rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*; \
 systemctl enable httpd.service
+# yum -y erase iprutils
 
-EXPOSE 80 8080
+EXPOSE 80
 
 VOLUME [ "/sys/fs/cgroup" ]
 
