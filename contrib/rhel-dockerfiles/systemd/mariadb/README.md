@@ -19,7 +19,7 @@ Check the image out.
 
 Run it:
 
-    # docker run -d -p 3306:3306 <yourname>/MariaDB
+    # docker run --privileged -p 3306:3306 -t -d -e 'container=docker' -v /sys/fs/cgroup:/sys/fs/cgroup:ro systemd/MariaDB
 
 Get container ID:
 
