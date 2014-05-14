@@ -18,6 +18,7 @@ import (
 	"github.com/dotcloud/docker/engine"
 	"github.com/dotcloud/docker/opts"
 	flag "github.com/dotcloud/docker/pkg/mflag"
+	"github.com/dotcloud/docker/server"
 	"github.com/dotcloud/docker/sysinit"
 	"github.com/dotcloud/docker/utils"
 )
@@ -66,6 +67,8 @@ func main() {
 		flCa                 = flag.String([]string{"-tlscacert"}, dockerConfDir+defaultCaFile, "Trust only remotes providing a certificate signed by the CA given here")
 		flCert               = flag.String([]string{"-tlscert"}, dockerConfDir+defaultCertFile, "Path to TLS certificate file")
 		flKey                = flag.String([]string{"-tlskey"}, dockerConfDir+defaultKeyFile, "Path to TLS key file")
+		flAppendRegistry     = flag.String([]string{"-registry-append"}, "", "Comma separated list of registries to append to default registry. Registries will be searched in reverse order.")
+		flDefaultRegistry    = flag.String([]string{"-registry-replace"}, "", "Comma separated list of registries to replace the default registry. Registries will be searched in reverse order.")
 		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support")
 		help                 = flag.Bool([]string{"#help", "-help"}, false, "Print usage")
 	)
@@ -84,6 +87,24 @@ func main() {
 		flag.SetOutput(os.Stdout)
 		flag.Usage()
 		return
+    }
+	if *flDefaultRegistry != "" {
+		regs := strings.Split(*flAppendRegistry, ",")
+		for r := range regs {
+			if regs[r] != "" && !strings.HasSuffix(regs[r], "/") {
+				regs[r] = fmt.Sprintf("%s/", regs[r])
+			}
+		}
+		server.RegistryList = regs
+	}
+	if *flAppendRegistry != "" {
+		regs := strings.Split(*flAppendRegistry, ",")
+		for r := range regs {
+			if regs[r] != "" && !strings.HasSuffix(regs[r], "/") {
+				regs[r] = fmt.Sprintf("%s/", regs[r])
+			}
+			server.RegistryList = append(server.RegistryList, regs[r])
+		}
 	}
 	if flHosts.Len() == 0 {
 		defaultHost := os.Getenv("DOCKER_HOST")
