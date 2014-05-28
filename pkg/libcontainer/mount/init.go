@@ -51,6 +51,9 @@ func InitializeMountNamespace(rootfs, console string, container *libcontainer.Co
 	if err := nodes.CopyN(rootfs, nodes.DefaultNodes); err != nil {
 		return fmt.Errorf("copy dev nodes %s", err)
 	}
+	if err := setupTmpfsMounts(rootfs, container.Mounts); err != nil {
+		return fmt.Errorf("tmpfs mounts %s", err)
+	}
 	if err := SetupPtmx(rootfs, console, container.Context["mount_label"]); err != nil {
 		return err
 	}
@@ -181,6 +184,27 @@ func setupBindmounts(rootfs string, bindMounts libcontainer.Mounts) error {
 			if err := system.Mount("", dest, "none", uintptr(syscall.MS_PRIVATE), ""); err != nil {
 				return fmt.Errorf("mounting %s private %s", dest, err)
 			}
+		}
+	}
+	return nil
+}
+
+func setupTmpfsMounts(rootfs string, bindMounts libcontainer.Mounts) error {
+	for _, m := range bindMounts.OfType("tmpfs") {
+		var (
+			dest = filepath.Join(rootfs, m.Destination)
+		)
+		dest, err := symlink.FollowSymlinkInScope(dest, rootfs)
+		if err != nil {
+			return err
+		}
+
+		if err := createIfNotExists(dest, true); err != nil {
+			return fmt.Errorf("Creating new tmpfs target, %s", err)
+		}
+
+		if err := system.Mount("tmpfs", dest, "tmpfs", uintptr(defaultMountFlags), ""); err != nil {
+			return fmt.Errorf("mounting %s into %s %s", m.Source, dest, err)
 		}
 	}
 	return nil
