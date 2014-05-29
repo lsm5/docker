@@ -54,7 +54,7 @@ func InitializeMountNamespace(rootfs, console string, container *libcontainer.Co
 	if err := nodes.CopyN(rootfs, container.OptionalDeviceNodes, false); err != nil {
 		return fmt.Errorf("copy optional dev nodes %s", err)
 	}
-	if err := setupTmpfsMounts(rootfs, container.Mounts); err != nil {
+	if err := setupTmpfsMounts(rootfs, container); err != nil {
 		return fmt.Errorf("tmpfs mounts %s", err)
 	}
 	if err := SetupPtmx(rootfs, console, container.Context["mount_label"]); err != nil {
@@ -192,8 +192,8 @@ func setupBindmounts(rootfs string, bindMounts libcontainer.Mounts) error {
 	return nil
 }
 
-func setupTmpfsMounts(rootfs string, bindMounts libcontainer.Mounts) error {
-	for _, m := range bindMounts.OfType("tmpfs") {
+func setupTmpfsMounts(rootfs string, container *libcontainer.Container) error {
+	for _, m := range container.Mounts.OfType("tmpfs") {
 		var (
 			dest = filepath.Join(rootfs, m.Destination)
 		)
@@ -206,7 +206,7 @@ func setupTmpfsMounts(rootfs string, bindMounts libcontainer.Mounts) error {
 			return fmt.Errorf("Creating new tmpfs target, %s", err)
 		}
 
-		if err := system.Mount("tmpfs", dest, "tmpfs", uintptr(defaultMountFlags), ""); err != nil {
+		if err := system.Mount("tmpfs", dest, "tmpfs", uintptr(defaultMountFlags), label.FormatMountLabel("", container.Context["mount_label"])); err != nil {
 			return fmt.Errorf("mounting %s into %s %s", m.Source, dest, err)
 		}
 	}
