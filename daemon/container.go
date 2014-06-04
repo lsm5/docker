@@ -27,6 +27,7 @@ import (
 	"github.com/dotcloud/docker/pkg/networkfs/etchosts"
 	"github.com/dotcloud/docker/pkg/networkfs/resolvconf"
 	"github.com/dotcloud/docker/pkg/symlink"
+	"github.com/dotcloud/docker/pkg/system"
 	"github.com/dotcloud/docker/runconfig"
 	"github.com/dotcloud/docker/utils"
 )
@@ -284,7 +285,17 @@ func (container *Container) Start() (err error) {
 		return err
 	}
 
-	return container.waitForStart()
+	if err := container.waitForStart(); err != nil {
+		return err
+	}
+
+	if !container.hostConfig.NoRunFs {
+		if err := system.Unmount(container.runPath(), syscall.MNT_DETACH); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (container *Container) Run() error {
@@ -514,6 +525,11 @@ func (container *Container) cleanup() {
 		}
 	}
 
+	// Ignore errors here as it may not be mounted anymore
+	if !container.hostConfig.NoRunFs {
+		system.Unmount(container.runPath(), syscall.MNT_DETACH)
+	}
+
 	if err := container.Unmount(); err != nil {
 		log.Printf("%v: Failed to umount filesystem: %v", container.ID, err)
 	}
@@ -692,6 +708,10 @@ func (container *Container) ReadLog(name string) (io.Reader, error) {
 		return nil, err
 	}
 	return os.Open(pth)
+}
+
+func (container *Container) runPath() string {
+	return container.getRootResourcePath("run")
 }
 
 func (container *Container) hostConfigPath() (string, error) {
