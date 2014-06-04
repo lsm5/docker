@@ -82,7 +82,7 @@ unix://[/path/to/socket] to use.
 Comma separated list of registries to replace the default registry. Registries will be searched in reverse order
 
 **--selinux-enabled**=*true*|*false*
-  Enable selinux support. Default is false.
+  Enable selinux support. Default is false. SELinux does not presently support the BTRFS storage driver.
 
 # COMMANDS
 **docker-attach(1)**
