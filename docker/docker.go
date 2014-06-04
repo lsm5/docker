@@ -69,7 +69,7 @@ func main() {
 		flKey                = flag.String([]string{"-tlskey"}, dockerConfDir+defaultKeyFile, "Path to TLS key file")
 		flAppendRegistry     = flag.String([]string{"-registry-append"}, "", "Comma separated list of registries to append to default registry. Registries will be searched in reverse order.")
 		flDefaultRegistry    = flag.String([]string{"-registry-replace"}, "", "Comma separated list of registries to replace the default registry. Registries will be searched in reverse order.")
-		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support")
+		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support. SELinux does not presently support the BTRFS storage driver")
 		help                 = flag.Bool([]string{"#help", "-help"}, false, "Print usage")
 	)
 	flag.Var(&flDns, []string{"#dns", "-dns"}, "Force Docker to use specific DNS servers")
