@@ -726,6 +726,40 @@ type Registry struct {
 	indexEndpoint string
 }
 
+func trustedLocation(req *http.Request) bool {
+	var (
+		trusteds = []string{"docker.com", "docker.io"}
+		hostname = strings.SplitN(req.Host, ":", 2)[0]
+	)
+	if req.URL.Scheme != "https" {
+		return false
+	}
+
+	for _, trusted := range trusteds {
+		if strings.HasSuffix(hostname, trusted) {
+			return true
+		}
+	}
+	return false
+}
+
+func AddRequiredHeadersToRedirectedRequests(req *http.Request, via []*http.Request) error {
+	if via != nil && via[0] != nil {
+		if trustedLocation(req) && trustedLocation(via[0]) {
+			req.Header = via[0].Header
+		} else {
+			for k, v := range via[0].Header {
+				if k != "Authorization" {
+					for _, vv := range v {
+						req.Header.Add(k, vv)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func NewRegistry(authConfig *AuthConfig, factory *utils.HTTPRequestFactory, indexEndpoint string) (r *Registry, err error) {
 	httpTransport := &http.Transport{
 		DisableKeepAlives: true,
