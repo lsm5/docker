@@ -40,6 +40,7 @@ func setupMountsForContainer(container *Container) error {
 	mounts := []execdriver.Mount{
 		{container.daemon.sysInitPath, "/.dockerinit", false, true},
 		{container.ResolvConfPath, "/etc/resolv.conf", false, true},
+		{container.secretsPath(), "/run/secrets", true, true},
 	}
 
 	if container.HostnamePath != "" {
