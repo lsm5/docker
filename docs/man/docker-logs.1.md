@@ -5,10 +5,8 @@
 docker-logs - Fetch the logs of a container
 
 # SYNOPSIS
-**docker logs**
-[**-f**|**--follow**[=*false*]]
-[**-t**|**--timestamps**[=*false*]]
-CONTAINER
+**docker logs** [**--help] [**-f**|**--follow**[=*false*]]
+[**-t**|**--timestamps**[=*false*]] CONTAINER
 
 # DESCRIPTION
 The **docker logs** command batch-retrieves whatever logs are present for
@@ -26,6 +24,8 @@ then continue streaming new output from the container’s stdout and stderr.
 
 **-t**, **--timestamps**=*true*|*false*
    Show timestamps. The default is *false*.
+
+**--help  Print Usage statement
 
 # HISTORY
 April 2014, Originally compiled by William Henry (whenry at redhat dot com)
