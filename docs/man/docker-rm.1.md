@@ -5,11 +5,9 @@
 docker-rm - Remove one or more containers
 
 # SYNOPSIS
-**docker rm**
-[**-f**|**--force**[=*false*]]
-[**-l**|**--link**[=*false*]]
-[**-v**|**--volumes**[=*false*]]
- CONTAINER [CONTAINER...]
+
+**docker rm** [**--help] [**-f**|**--force**[=*false*] [**-l**|**--link**[=*false*] [**-v** | **--volumes**[=*false*]
+CONTAINER [CONTAINER...]
 
 # DESCRIPTION
 
@@ -19,6 +17,9 @@ remove a running container unless you use the \fB-f\fR option. To see all
 containers on a host use the **docker ps -a** command.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **-f**, **--force**=*true*|*false*
    Force removal of running container. The default is *false*.
 

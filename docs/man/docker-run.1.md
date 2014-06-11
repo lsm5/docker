@@ -121,6 +121,28 @@ developer can expose the port using the EXPOSE parameter of the Dockerfile, 2)
 the operator can use the **--expose** option with **docker run**, or 3) the
 container can be started with the **--link**.
 
+**--help  Print Usage statement
+
+**-m**, **-memory**=*memory-limit*
+   Allows you to constrain the memory available to a container. If the host
+supports swap memory, then the -m memory setting can be larger than physical
+RAM. If a limit of 0 is specified, the container's memory is not limited. The 
+memory limit format: <number><optional unit>, where unit = b, k, m or g.
+
+**-P**, **-publish-all**=*true*|*false*
+   When set to true publish all exposed ports to the host interfaces. The
+default is false. If the operator uses -P (or -p) then Docker will make the
+exposed port accessible on the host and the ports will be available to any
+client that can reach the host. To find the map between the host ports and the
+exposed ports, use **docker port**.
+
+
+**-p**, **-publish**=[]
+   Publish a container's port to the host (format: ip:hostPort:containerPort |
+ip::containerPort | hostPort:containerPort) (use **docker port** to see the
+actual mapping)
+
+
 **-h**, **-hostname**=*hostname*
    Sets the container host name that is available inside the container.
 

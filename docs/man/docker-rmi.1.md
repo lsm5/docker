@@ -5,10 +5,10 @@
 docker-rmi - Remove one or more images
 
 # SYNOPSIS
-**docker rmi**
-[**-f**|**--force**[=*false*]]
-[**--no-prune**[=*false*]]
-IMAGE [IMAGE...]
+
+**docker rmi** [**--help] [**-f**|**--force**[=*false*]
+[**--no-prune**[=*false*]] IMAGE [IMAGE...]
+>>>>>>> Add --help info to man pages:contrib/man/md/docker-rmi.1.md
 
 # DESCRIPTION
 
@@ -18,6 +18,9 @@ container unless you use the **-f** option. To see all images on a host
 use the **docker images** command.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **-f**, **--force**=*true*|*false*
    Force removal of the image. The default is *false*.
 

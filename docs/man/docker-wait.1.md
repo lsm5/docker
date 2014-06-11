@@ -5,17 +5,17 @@
 docker-wait - Block until a container stops, then print its exit code.
 
 # SYNOPSIS
-**docker wait**
-CONTAINER [CONTAINER...]
+**docker wait** [**--help] CONTAINER [CONTAINER...]
 
 # DESCRIPTION
 
 Block until a container stops, then print its exit code.
 
 # OPTIONS
-There are no available options.
 
-# EXAMPLES
+**--help  Print Usage statement
+
+#EXAMPLE
 
     $ sudo docker run -d fedora sleep 99
     079b83f558a2bc52ecad6b2a5de13622d584e6bb1aea058c11b36511e85e7622

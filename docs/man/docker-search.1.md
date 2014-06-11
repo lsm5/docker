@@ -5,11 +5,8 @@
 docker-search - Search the Docker Hub for images
 
 # SYNOPSIS
-**docker search**
-[**--automated**[=*false*]]
-[**--no-trunc**[=*false*]]
-[**-s**|**--stars**[=*0*]]
-TERM
+**docker search** [**--help**] **--no-trunc**[=*false*] **--automated**[=*false*]
+ **-s**|**--stars**[=*0*] TERM
 
 # DESCRIPTION
 
@@ -22,8 +19,10 @@ is automated.
 **--automated**=*true*|*false*
    Only show automated builds. The default is *false*.
 
+**--help  Print Usage statement
+
 **--no-trunc**=*true*|*false*
-   Don't truncate output. The default is *false*.
+   When true display the complete description. The default is false.
 
 **-s**, **--stars**=0
    Only displays with at least x stars
