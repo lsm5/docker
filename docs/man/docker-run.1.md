@@ -18,6 +18,7 @@ docker-run - Run a command in a new container
 [**--env-file**[=*[]*]]
 [**--expose**[=*[]*]]
 [**-h**|**--hostname**[=*HOSTNAME*]]
+[**--help]
 [**-i**|**--interactive**[=*false*]]
 [**--link**[=*[]*]]
 [**--lxc-conf**[=*[]*]]
