@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/docker/libcontainer/cgroups"
 	"github.com/docker/libcontainer/label"
 	"github.com/docker/libcontainer/mount/nodes"
 	"github.com/dotcloud/docker/pkg/symlink"
