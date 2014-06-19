@@ -27,6 +27,7 @@ import (
 // Move this to libcontainer package.
 // Init is the init process that first runs inside a new namespace to setup mounts, users, networking,
 // and other options required for the new container.
+<<<<<<< HEAD:vendor/src/github.com/docker/libcontainer/namespaces/init.go
 func Init(container *libcontainer.Config, uncleanRootfs, consolePath string, syncPipe *SyncPipe, args []string) (err error) {
 	defer func() {
 		if err != nil {
@@ -106,6 +107,9 @@ func Init(container *libcontainer.Config, uncleanRootfs, consolePath string, syn
 	if err != nil {
 		return fmt.Errorf("get parent death signal %s", err)
 	}
+
+	// Report to parent that we're done. By this point all network and volumes are set up.
+	syncPipe.Close()
 
 	if err := FinalizeNamespace(container); err != nil {
 		return fmt.Errorf("finalize namespace %s", err)

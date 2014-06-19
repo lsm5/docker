@@ -93,10 +93,13 @@ func Exec(container *libcontainer.Config, term Terminal, rootfs, dataPath string
 	}
 	defer libcontainer.DeleteState(dataPath)
 
-	// Sync with child
 	if err := syncPipe.ReadFromChild(); err != nil {
 		command.Process.Kill()
 		command.Wait()
+		return -1, err
+    }
+	// Sync with child
+	if err := syncPipe.BlockOnChild(); err != nil {
 		return -1, err
 	}
 
