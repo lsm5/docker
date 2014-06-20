@@ -1630,6 +1630,7 @@ func (cli *DockerCli) CmdPs(args ...string) error {
 				outCommand = out.Get("Command")
 				ports      = engine.NewTable("", 0)
 			)
+			outCommand = strconv.Quote(outCommand)
 			if !*noTrunc {
 				outCommand = utils.Trunc(outCommand, 20)
 			}
