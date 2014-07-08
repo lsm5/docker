@@ -194,6 +194,10 @@ default specified in CMD.
 > the result; `CMD` does not execute anything at build time, but specifies
 > the intended command for the image.
 
+## COMMENT
+   COMMENT <comment>
+   The COMMENT instruction sets the Comment field for the generated images.
+
 ## EXPOSE
 
     EXPOSE <port> [<port>...]
@@ -469,6 +473,8 @@ For example you might add something like this:
 
     FROM      ubuntu
     MAINTAINER Guillaume J. Charmes <guillaume@docker.com>
+
+    COMMENT "This image runs Nginx on an ubunto base"
 
     # make sure the package repository is up to date
     RUN echo "deb http://archive.ubuntu.com/ubuntu precise main universe" > /etc/apt/sources.list
