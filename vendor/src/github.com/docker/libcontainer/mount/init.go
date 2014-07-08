@@ -96,7 +96,7 @@ func mountSystem(rootfs string, mountConfig *MountConfig) error {
 
 	// Mount all cgroup subsystems into the container, read-only. Create symlinks for each
 	// subsystem if any subsystems are merged
-	cgroupMounts, err := cgroups.GetMounts()
+	cgroupMounts, err := cgroups.GetCgroupMounts()
 	if err != nil {
 		return err
 	}

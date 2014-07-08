@@ -468,6 +468,7 @@ func postImagesCreate(eng *engine.Engine, version version.Version, w http.Respon
 
 	var (
 		image = r.Form.Get("fromImage")
+        repo  = r.Form.Get("repo")
 		tag   = r.Form.Get("tag")
 		job   *engine.Job
 	)
@@ -493,7 +494,11 @@ func postImagesCreate(eng *engine.Engine, version version.Version, w http.Respon
 		job.SetenvJson("metaHeaders", metaHeaders)
 		job.SetenvJson("authConfig", authConfig)
 	} else { //import
-		job = eng.Job("import", r.Form.Get("fromSrc"), r.Form.Get("repo"), tag)
+		if tag == "" {
+			repo, tag = utils.ParseRepositoryTag(repo)
+		}
+		job = eng.Job("import", r.Form.Get("fromSrc"), repo, tag)
+		job.Setenv("comment", r.Form.Get("comment"))
 		job.Stdin.Add(r.Body)
 	}
 

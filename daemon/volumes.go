@@ -10,7 +10,7 @@ import (
 
 	"github.com/dotcloud/docker/archive"
 	"github.com/dotcloud/docker/daemon/execdriver"
-	"github.com/dotcloud/docker/pkg/label"
+	"github.com/docker/libcontainer/label"
 	"github.com/dotcloud/docker/pkg/symlink"
 	"github.com/dotcloud/docker/pkg/system"
 )
@@ -58,7 +58,12 @@ func setupMountsForContainer(container *Container) error {
 		mounts = append(mounts, *runMount)
 	}
 
-	mounts = append(mounts, execdriver.Mount{container.secretsPath(), "/run/secrets", true, true})
+    secretsPath, err := container.secretsPath()
+    if err != nil {
+        return err
+    }
+
+	mounts = append(mounts, execdriver.Mount{secretsPath, "/run/secrets", true, true})
 
 	// Mount user specified volumes
 	// Note, these are not private because you may want propagation of (un)mounts from host
@@ -353,7 +358,11 @@ func copyOwnership(source, destination string) error {
 }
 
 func setupRun(container *Container) (*execdriver.Mount, error) {
-	runPath := container.runPath()
+    runPath, err := container.runPath()
+    if err != nil {
+        return nil, err
+    }
+
 	if err := os.MkdirAll(runPath, 0700); err != nil && !os.IsExist(err) {
 		return nil, err
 	}

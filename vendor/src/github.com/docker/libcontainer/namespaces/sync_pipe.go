@@ -60,6 +60,8 @@ func (s *SyncPipe) ReadFromChild() error {
 	if len(data) > 0 {
 		return fmt.Errorf("%s", data)
 	}
+
+    return nil
 }
 
 func (s *SyncPipe) BlockOnChild() error {

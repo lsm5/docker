@@ -1128,8 +1128,9 @@ func (cli *DockerCli) CmdKill(args ...string) error {
 }
 
 func (cli *DockerCli) CmdImport(args ...string) error {
-	cmd := cli.Subcmd("import", "URL|- [REPOSITORY[:TAG]]", "Create an empty filesystem image and import the contents of the tarball (.tar, .tar.gz, .tgz, .bzip, .tar.xz, .txz) into it, then optionally tag it.")
+	cmd := cli.Subcmd("import", "URL|- [OPTIONS] [REPOSITORY[:TAG]]", "Create an empty filesystem image and import the contents of the tarball (.tar, .tar.gz, .tgz, .bzip, .tar.xz, .txz) into it, then optionally tag it.")
 	help := cmd.Bool([]string{"#help", "-help"}, false, "Print usage")
+	flComment := cmd.String([]string{"m", "-message"}, "", "Commit message")
 
 	if err := cmd.Parse(args); err != nil {
 		return nil
@@ -1144,16 +1145,15 @@ func (cli *DockerCli) CmdImport(args ...string) error {
 		return nil
 	}
 
-	var src, repository, tag string
+	var (
+		v          = url.Values{}
+		src        = cmd.Arg(0)
+		repository = cmd.Arg(1)
+	)
 
-	if cmd.NArg() == 3 {
-		fmt.Fprintf(cli.err, "[DEPRECATED] The format 'URL|- [REPOSITORY [TAG]]' as been deprecated. Please use URL|- [REPOSITORY[:TAG]]\n")
-		src, repository, tag = cmd.Arg(0), cmd.Arg(1), cmd.Arg(2)
-	} else {
-		src = cmd.Arg(0)
-		repository, tag = utils.ParseRepositoryTag(cmd.Arg(1))
-	}
-	v := url.Values{}
+	v.Set("fromSrc", src)
+	v.Set("repo", repository)
+	v.Set("comment", *flComment)
 
 	if repository != "" {
 		//Check if the given image name can be resolved
@@ -1161,10 +1161,6 @@ func (cli *DockerCli) CmdImport(args ...string) error {
 			return err
 		}
 	}
-
-	v.Set("repo", repository)
-	v.Set("tag", tag)
-	v.Set("fromSrc", src)
 
 	var in io.Reader
 
