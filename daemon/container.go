@@ -233,6 +233,8 @@ func populateCommand(c *Container, env []string) error {
 		Resources:          resources,
 		AllowedDevices:     devices.DefaultAllowedDevices,
 		AutoCreatedDevices: devices.DefaultAutoCreatedDevices,
+		CapAdd:             c.hostConfig.CapAdd,
+		CapDrop:            c.hostConfig.CapDrop,
 	}
 	c.command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	c.command.Env = env

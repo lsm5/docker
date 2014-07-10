@@ -993,3 +993,12 @@ func ValidateContextDirectory(srcPath string) error {
 	})
 	return finalError
 }
+
+func StringsContains(slice []string, s string) bool {
+	for _, ss := range slice {
+		if s == ss {
+			return true
+		}
+	}
+	return false
+}

@@ -19,6 +19,12 @@ func (n NetworkMode) IsContainer() bool {
 	return len(parts) > 1 && parts[0] == "container"
 }
 
+type DeviceMapping struct {
+    PathOnHost string
+    PathInContainer string
+    CgroupPermissions string
+}
+
 type HostConfig struct {
 	Binds           []string
 	ContainerIDFile string
@@ -30,8 +36,11 @@ type HostConfig struct {
 	Dns             []string
 	DnsSearch       []string
 	VolumesFrom     []string
+    Devices         []DeviceMapping
 	NetworkMode     NetworkMode
 	NoRunFs         bool
+	CapAdd          []string
+	CapDrop         []string
 }
 
 func ContainerHostConfigFromJob(job *engine.Job) *HostConfig {

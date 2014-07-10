@@ -41,6 +41,7 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		flVolumes = opts.NewListOpts(opts.ValidatePath)
 		flLinks   = opts.NewListOpts(opts.ValidateLink)
 		flEnv     = opts.NewListOpts(opts.ValidateEnv)
+        flDevices = opts.NewListOpts(opts.ValidatePath)
 
 		flPublish     opts.ListOpts
 		flExpose      opts.ListOpts
@@ -49,6 +50,8 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		flVolumesFrom opts.ListOpts
 		flLxcOpts     opts.ListOpts
 		flEnvFile     opts.ListOpts
+		flCapAdd      opts.ListOpts
+		flCapDrop     opts.ListOpts
 
 		flAutoRemove      = cmd.Bool([]string{"#rm", "-rm"}, false, "Automatically remove the container when it exits (incompatible with -d)")
 		flDetach          = cmd.Bool([]string{"d", "-detach"}, false, "Detached mode: Run container in the background, print new container id")
@@ -75,6 +78,7 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 	cmd.Var(&flAttach, []string{"a", "-attach"}, "Attach to stdin, stdout or stderr.")
 	cmd.Var(&flVolumes, []string{"v", "-volume"}, "Bind mount a volume (e.g., from the host: -v /host:/container, from docker: -v /container)")
 	cmd.Var(&flLinks, []string{"#link", "-link"}, "Add link to another container (name:alias)")
+    cmd.Var(&flDevices, []string{"-device"}, "Add a host device to the container (e.g. --device=/dev/sdc:/dev/xvdc)")
 	cmd.Var(&flEnv, []string{"e", "-env"}, "Set environment variables")
 	cmd.Var(&flEnvFile, []string{"-env-file"}, "Read in a line delimited file of ENV variables")
 
@@ -84,6 +88,9 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 	cmd.Var(&flDnsSearch, []string{"-dns-search"}, "Set custom dns search domains")
 	cmd.Var(&flVolumesFrom, []string{"#volumes-from", "-volumes-from"}, "Mount volumes from the specified container(s)")
 	cmd.Var(&flLxcOpts, []string{"#lxc-conf", "-lxc-conf"}, "(lxc exec-driver only) Add custom lxc options --lxc-conf=\"lxc.cgroup.cpuset.cpus = 0,1\"")
+
+	cmd.Var(&flCapAdd, []string{"-cap-add"}, "Add Linux capability(ies)")
+	cmd.Var(&flCapDrop, []string{"-cap-drop"}, "Drop Linux capability(ies)")
 
 	if err := cmd.Parse(args); err != nil {
 		return nil, nil, cmd, err
@@ -196,6 +203,16 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		}
 	}
 
+    // parse device mappings
+    deviceMappings := []DeviceMapping{}
+    for _, device := range flDevices.GetAll() {
+        deviceMapping, err := ParseDevice(device)
+        if err != nil {
+            return nil, nil, cmd, err
+        }
+        deviceMappings = append(deviceMappings, deviceMapping)
+    }
+
 	// collect all the environment variables for the container
 	envVariables := []string{}
 	for _, ef := range flEnvFile.GetAll() {
@@ -250,6 +267,9 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		DnsSearch:       flDnsSearch.GetAll(),
 		VolumesFrom:     flVolumesFrom.GetAll(),
 		NetworkMode:     netMode,
+		Devices:         deviceMappings,
+		CapAdd:          flCapAdd.GetAll(),
+		CapDrop:         flCapDrop.GetAll(),
 	}
 
 	if sysInfo != nil && flMemory > 0 && !sysInfo.SwapLimit {
@@ -307,4 +327,34 @@ func parseNetMode(netMode string) (NetworkMode, error) {
 		return "", fmt.Errorf("invalid --net: %s", netMode)
 	}
 	return NetworkMode(netMode), nil
+}
+
+func ParseDevice(device string) (DeviceMapping, error) {
+    src := ""
+    dst := ""
+    permissions := "rwm"
+    arr := strings.Split(device, ":")
+    switch len(arr) {
+    case 3:
+        permissions = arr[2]
+        fallthrough
+    case 2:
+        dst = arr[1]
+        fallthrough
+    case 1:
+        src = arr[0]
+    default:
+        return DeviceMapping{}, fmt.Errorf("Invalid device specification: %s", device)
+    }
+
+    if dst == "" {
+        dst = src
+    }
+
+    deviceMapping := DeviceMapping{
+        PathOnHost: src,
+        PathInContainer: dst,
+        CgroupPermissions: permissions,
+    }
+    return deviceMapping, nil
 }

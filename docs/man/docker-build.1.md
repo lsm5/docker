@@ -5,18 +5,14 @@
 docker-build - Build a new image from the source code at PATH
 
 # SYNOPSIS
-<<<<<<< HEAD:docs/man/docker-build.1.md
 **docker build**
+[**--help]
 [**--force-rm**[=*false*]]
 [**--no-cache**[=*false*]]
 [**-q**|**--quiet**[=*false*]]
 [**--rm**[=*true*]]
 [**-t**|**--tag**[=*TAG*]]
  PATH | URL | -
-=======
-**docker build** [**--help] [**--no-cache**[=*false*]] [**-q**|**--quiet**[=*false*]]
- [**--rm**] [**-t**|**--tag**=TAG] PATH | URL | -
->>>>>>> Add --help info to man pages:contrib/man/md/docker-build.1.md
 
 # DESCRIPTION
 This will read the Dockerfile from the directory specified in **PATH**.

@@ -15,16 +15,9 @@ container ID or container name. The output is exported to STDOUT and can be
 redirected to a tar file.
 
 # OPTIONS
-<<<<<<< HEAD:docs/man/docker-export.1.md
-There are no available options.
-
-# EXAMPLES
-=======
-
 **--help  Print Usage statement
 
 # EXAMPLE
->>>>>>> Add --help info to man pages:contrib/man/md/docker-export.1.md
 Export the contents of the container called angry_bell to a tar file
 called test.tar:
 
