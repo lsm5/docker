@@ -296,13 +296,23 @@ func (container *Container) Start() (err error) {
 	}
 
 	if !container.hostConfig.NoRunFs {
-		if err := system.Unmount(container.runPath(), syscall.MNT_DETACH); err != nil {
+        runPath, err := container.runPath()
+        if err != nil {
+            return err
+        }
+
+		if err := system.Unmount(runPath, syscall.MNT_DETACH); err != nil {
 			return err
 		}
 	}
 
 	// Now the container is running, unmount the secrets on the host
-	if err := system.Unmount(container.secretsPath(), syscall.MNT_DETACH); err != nil {
+    secretsPath, err := container.secretsPath()
+    if err != nil {
+        return err
+    }
+
+	if err := system.Unmount(secretsPath, syscall.MNT_DETACH); err != nil {
 		return err
 	}
 
@@ -311,10 +321,17 @@ func (container *Container) Start() (err error) {
 
 // some semblance of a UUID for the container runtime.
 func (container *Container) setupMachineId() error {
-	if err := os.MkdirAll(container.getResourcePath("/etc"), 0755); err != nil {
+    etcPath, err := container.getResourcePath("/etc")
+    if err != nil {
+        return err
+    }
+
+	if err := os.MkdirAll(etcPath, 0755); err != nil {
 		return err
 	}
-	fh, err := os.Create(container.getResourcePath("/etc/machine-id"))
+
+    machineIdPath := filepath.Join(etcPath, "machine-id")
+	fh, err := os.Create(machineIdPath)
 	if err != nil {
 		return err
 	}
@@ -553,9 +570,18 @@ func (container *Container) cleanup() {
 
 	// Ignore errors here as it may not be mounted anymore
 	if !container.hostConfig.NoRunFs {
-		system.Unmount(container.runPath(), syscall.MNT_DETACH)
+        runPath, err := container.runPath()
+        if err != nil {
+            utils.Errorf("%s: Error getting run path", err)
+        }
+
+		system.Unmount(runPath, syscall.MNT_DETACH)
 	}
-	system.Unmount(container.secretsPath(), syscall.MNT_DETACH)
+    secretsPath, err := container.secretsPath()
+    if err != nil {
+        utils.Errorf("%s: Error getting secrets path", err)
+    }
+	system.Unmount(secretsPath, syscall.MNT_DETACH)
 
 	if err := container.Unmount(); err != nil {
 		log.Printf("%v: Failed to umount filesystem: %v", container.ID, err)
@@ -737,7 +763,7 @@ func (container *Container) ReadLog(name string) (io.Reader, error) {
 	return os.Open(pth)
 }
 
-func (container *Container) runPath() string {
+func (container *Container) runPath() (string, error) {
 	return container.getRootResourcePath("run")
 }
 
@@ -749,7 +775,7 @@ func (container *Container) jsonPath() (string, error) {
 	return container.getRootResourcePath("config.json")
 }
 
-func (container *Container) secretsPath() string {
+func (container *Container) secretsPath() (string, error) {
 	return container.getRootResourcePath("secrets")
 }
 
@@ -1005,7 +1031,10 @@ func (container *Container) verifyDaemonSettings() {
 }
 
 func (container *Container) setupSecretFiles() error {
-	secretsPath := container.secretsPath()
+	secretsPath, err := container.secretsPath()
+    if err != nil {
+        return err
+    }
 
 	if err := os.MkdirAll(secretsPath, 0700); err != nil {
 		return err
