@@ -10,7 +10,7 @@ import (
 
 	"github.com/dotcloud/docker/archive"
 	"github.com/dotcloud/docker/daemon/execdriver"
-	"github.com/dotcloud/docker/pkg/label"
+	"github.com/docker/libcontainer/label"
 	"github.com/dotcloud/docker/pkg/symlink"
 	"github.com/dotcloud/docker/pkg/system"
 )

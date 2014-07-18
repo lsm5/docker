@@ -27,7 +27,6 @@ import (
 // Move this to libcontainer package.
 // Init is the init process that first runs inside a new namespace to setup mounts, users, networking,
 // and other options required for the new container.
-<<<<<<< HEAD:vendor/src/github.com/docker/libcontainer/namespaces/init.go
 func Init(container *libcontainer.Config, uncleanRootfs, consolePath string, syncPipe *SyncPipe, args []string) (err error) {
 	defer func() {
 		if err != nil {
