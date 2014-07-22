@@ -145,7 +145,7 @@ func InitServer(job *engine.Job) engine.Status {
 		"top":              srv.ContainerTop,
 		"load":             srv.ImageLoad,
 		"build":            srv.Build,
-		"pull":             srv.ImagePull,
+		"pull":             srv.RegistryPull,
 		"import":           srv.ImageImport,
 		"image_delete":     srv.ImageDelete,
 		"events":           srv.Events,
@@ -1152,13 +1152,13 @@ func (srv *Server) pullImage(r *registry.Registry, out io.Writer, imgID, endpoin
 }
 
 func (srv *Server) pullRepository(r *registry.Registry, out io.Writer, localName, remoteName, askedTag string, sf *utils.StreamFormatter, parallel bool) error {
-	out.Write(sf.FormatStatus("", "Pulling repository %s", localName))
 
 	repoData, err := r.GetRepositoryData(remoteName)
 	if err != nil {
 		return err
 	}
 
+	out.Write(sf.FormatStatus("", "Pulling repository %s", localName))
 	utils.Debugf("Retrieving the tag list")
 	tagsList, err := r.GetRemoteTags(repoData.Endpoints, remoteName, repoData.Tokens)
 	if err != nil {
@@ -1373,16 +1373,32 @@ func (srv *Server) ImagePull(job *engine.Job) engine.Status {
 		return job.Error(err)
 	}
 
-	if endpoint == registry.IndexServerAddress() {
-		// If pull "index.docker.io/foo/bar", it's stored locally under "foo/bar"
-		localName = remoteName
-	}
-
 	if err = srv.pullRepository(r, job.Stdout, localName, remoteName, tag, sf, job.GetenvBool("parallel")); err != nil {
 		return job.Error(err)
 	}
 
 	return engine.StatusOK
+}
+
+func (srv *Server) RegistryPull(job *engine.Job) engine.Status {
+	var (
+		tmp    = job.Args[0]
+		status = engine.StatusErr
+	)
+	for r := len(registry.RegistryList) - 1; r >= 0; r-- {
+		if registry.RegistryList[r] != "index.docker.io" {
+			job.Args[0] = fmt.Sprintf("%s/%s", registry.RegistryList[r], tmp)
+		} else {
+			job.Args[0] = tmp
+		}
+		status := srv.ImagePull(job)
+		if status == engine.StatusOK {
+			job.Args[1] = tmp
+			srv.ImageTag(job)
+			return status
+		}
+	}
+	return status
 }
 
 // Retrieve the all the images to be uploaded in the correct order

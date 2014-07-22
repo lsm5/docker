@@ -4,6 +4,8 @@ import (
 	"github.com/dotcloud/docker/engine"
 )
 
+var RegistryList = []string{"index.docker.io"}
+
 // Service exposes registry capabilities in the standard Engine
 // interface. Once installed, it extends the engine with the
 // following calls:
@@ -78,11 +80,20 @@ func (s *Service) Search(job *engine.Job) engine.Status {
 		term        = job.Args[0]
 		metaHeaders = map[string][]string{}
 		authConfig  = &AuthConfig{}
+		r           *Registry
+		err         error
 	)
 	job.GetenvJson("authConfig", authConfig)
 	job.GetenvJson("metaHeaders", metaHeaders)
 
-	r, err := NewRegistry(authConfig, HTTPRequestFactory(metaHeaders), IndexServerAddress(), true)
+	for reg := len(RegistryList) - 1; reg >= 0; reg-- {
+		if endpoint, err := ExpandAndVerifyRegistryUrl(RegistryList[reg]); err == nil {
+			r, err = NewRegistry(authConfig, HTTPRequestFactory(metaHeaders), endpoint, true)
+			if err == nil {
+				break
+			}
+		}
+	}
 	if err != nil {
 		return job.Error(err)
 	}
