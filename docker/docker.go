@@ -18,6 +18,7 @@ import (
 	"github.com/dotcloud/docker/engine"
 	"github.com/dotcloud/docker/opts"
 	flag "github.com/dotcloud/docker/pkg/mflag"
+	"github.com/dotcloud/docker/registry"
 	"github.com/dotcloud/docker/sysinit"
 	"github.com/dotcloud/docker/utils"
 )
@@ -63,10 +64,12 @@ func main() {
 		flMtu                = flag.Int([]string{"#mtu", "-mtu"}, 0, "Set the containers network MTU\nif no value is provided: default to the default route MTU or 1500 if no default route is available")
 		flTls                = flag.Bool([]string{"-tls"}, false, "Use TLS; implied by tls-verify flags")
 		flTlsVerify          = flag.Bool([]string{"-tlsverify"}, false, "Use TLS and verify the remote (daemon: verify client, client: verify daemon)")
-		flCa                 = flag.String([]string{"-tlscacert"}, dockerConfDir+defaultCaFile, "Trust only remotes providing a certificate signed by the CA given here")
-		flCert               = flag.String([]string{"-tlscert"}, dockerConfDir+defaultCertFile, "Path to TLS certificate file")
-		flKey                = flag.String([]string{"-tlskey"}, dockerConfDir+defaultKeyFile, "Path to TLS key file")
-		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support")
+		flCa                 = flag.String([]string{"-tlscacert"}, filepath.Join(dockerConfDir, defaultCaFile), "Trust only remotes providing a certificate signed by the CA given here")
+		flCert               = flag.String([]string{"-tlscert"}, filepath.Join(dockerConfDir, defaultCertFile), "Path to TLS certificate file")
+		flKey                = flag.String([]string{"-tlskey"}, filepath.Join(dockerConfDir, defaultKeyFile), "Path to TLS key file")
+		flAppendRegistry     = flag.String([]string{"-registry-append"}, "", "Comma separated list of registries to append to default registry. Registries will be searched in reverse order.")
+		flDefaultRegistry    = flag.String([]string{"-registry-replace"}, "", "Comma separated list of registries to replace the default registry. Registries will be searched in reverse order.")
+		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support. SELinux does not presently support the BTRFS storage driver")
 		help                 = flag.Bool([]string{"#help", "-help"}, false, "Print usage")
 	)
 	flag.Var(&flDns, []string{"#dns", "-dns"}, "Force Docker to use specific DNS servers")
@@ -84,6 +87,15 @@ func main() {
 		flag.SetOutput(os.Stdout)
 		flag.Usage()
 		return
+    }
+	if *flDefaultRegistry != "" {
+		registry.RegistryList = strings.Split(*flDefaultRegistry, ",")
+	}
+	if *flAppendRegistry != "" {
+		regs := strings.Split(*flAppendRegistry, ",")
+		for r := range regs {
+			registry.RegistryList = append(registry.RegistryList, regs[r])
+		}
 	}
 	if flHosts.Len() == 0 {
 		defaultHost := os.Getenv("DOCKER_HOST")
