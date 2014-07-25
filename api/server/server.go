@@ -468,7 +468,7 @@ func postImagesCreate(eng *engine.Engine, version version.Version, w http.Respon
 
 	var (
 		image = r.Form.Get("fromImage")
-        repo  = r.Form.Get("repo")
+		repo  = r.Form.Get("repo")
 		tag   = r.Form.Get("tag")
 		job   *engine.Job
 	)
@@ -499,6 +499,7 @@ func postImagesCreate(eng *engine.Engine, version version.Version, w http.Respon
 		}
 		job = eng.Job("import", r.Form.Get("fromSrc"), repo, tag)
 		job.Setenv("comment", r.Form.Get("comment"))
+		job.SetenvList("env", strings.Split(r.Form.Get("env"), " "))
 		job.Stdin.Add(r.Body)
 	}
 
