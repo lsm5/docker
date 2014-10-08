@@ -56,6 +56,7 @@ type HostConfig struct {
 	CapAdd          []string
 	CapDrop         []string
 	RestartPolicy   RestartPolicy
+	MountRun        bool
 }
 
 // This is used by the create command when you want to set both the

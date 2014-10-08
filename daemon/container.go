@@ -332,7 +332,21 @@ func (container *Container) Start() (err error) {
 		return err
 	}
 
-	return container.waitForStart()
+	if err := container.waitForStart(); err != nil {
+		return err
+	}
+
+	if container.hostConfig.MountRun {
+		path, err := container.runPath()
+		if err != nil {
+			log.Errorf("%v: Failed to umount run filesystem: %v", container.ID, err)
+		}
+		if err := syscall.Unmount(path, syscall.MNT_DETACH); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (container *Container) Run() error {
@@ -573,6 +587,15 @@ func (container *Container) cleanup() {
 		}
 	}
 
+	// Ignore errors here as it may not be mounted anymore
+	if container.hostConfig.MountRun {
+		path, err := container.runPath()
+		if err != nil {
+			log.Errorf("%v: Failed to umount run filesystem: %v", container.ID, err)
+		}
+		syscall.Unmount(path, syscall.MNT_DETACH)
+	}
+
 	if err := container.Unmount(); err != nil {
 		log.Errorf("%v: Failed to umount filesystem: %v", container.ID, err)
 	}
@@ -767,6 +790,10 @@ func (container *Container) ReadLog(name string) (io.Reader, error) {
 		return nil, err
 	}
 	return os.Open(pth)
+}
+
+func (container *Container) runPath() (string, error) {
+	return container.getRootResourcePath("run")
 }
 
 func (container *Container) hostConfigPath() (string, error) {
