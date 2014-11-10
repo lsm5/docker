@@ -59,6 +59,8 @@ func Parse(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Config,
 		flCpuShares       = cmd.Int64([]string{"c", "-cpu-shares"}, 0, "CPU shares (relative weight)")
 		flCpuset          = cmd.String([]string{"-cpuset"}, "", "CPUs in which to allow execution (0-3, 0,1)")
 		flNetMode         = cmd.String([]string{"-net"}, "bridge", "Set the Network mode for the container\n'bridge': creates a new network stack for the container on the docker bridge\n'none': no networking for this container\n'container:<name|id>': reuses another container network stack\n'host': use the host network stack inside the container.  Note: the host mode gives the container full access to local system services such as D-bus and is therefore considered insecure.")
+		flMacAddress      = cmd.String([]string{"-mac-address"}, "", "Container MAC address (e.g. 92:d0:c6:0a:29:33)")
+		flIpcMode         = cmd.String([]string{"-ipc"}, "", "Default is to create a private IPC namespace (POSIX SysV IPC) for the container\n'container:<name|id>': reuses another container shared memory, semaphores and message queues\n'host': use the host shared memory,semaphores and message queues inside the container.  Note: the host mode gives the container full access to local shared memory and is therefore considered insecure.")
 		flRestartPolicy   = cmd.String([]string{"-restart"}, "", "Restart policy to apply when a container exits (no, on-failure[:max-retry], always)")
 	)
 
@@ -225,6 +227,11 @@ func Parse(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Config,
 	// parse the '-e' and '--env' after, to allow override
 	envVariables = append(envVariables, flEnv.GetAll()...)
 
+	ipcMode := IpcMode(*flIpcMode)
+	if !ipcMode.Valid() {
+		return nil, nil, cmd, fmt.Errorf("--ipc: invalid IPC mode: %v", err)
+	}
+
 	netMode, err := parseNetMode(*flNetMode)
 	if err != nil {
 		return nil, nil, cmd, fmt.Errorf("--net: invalid net mode: %v", err)
@@ -236,27 +243,28 @@ func Parse(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Config,
 	}
 
 	config := &Config{
-		Hostname:        hostname,
-		Domainname:      domainname,
-		PortSpecs:       nil, // Deprecated
-		ExposedPorts:    ports,
-		User:            *flUser,
-		Tty:             *flTty,
-		NetworkDisabled: !*flNetwork,
-		OpenStdin:       *flStdin,
-		Memory:          flMemory,
-		CpuShares:       *flCpuShares,
-		Cpuset:          *flCpuset,
-		AttachStdin:     attachStdin,
-		AttachStdout:    attachStdout,
-		AttachStderr:    attachStderr,
-		Env:             envVariables,
-		Cmd:             runCmd,
-		Image:           image,
-		Volumes:         flVolumes.GetMap(),
-		Entrypoint:      entrypoint,
-		WorkingDir:      *flWorkingDir,
-		SecurityOpt:     flSecurityOpt.GetAll(),
+		Hostname:           hostname,
+		Domainname:         domainname,
+		PortSpecs:          nil, // Deprecated
+		ExposedPorts:       ports,
+		User:               *flUser,
+		Tty:                *flTty,
+		NetworkDisabled:    !*flNetwork,
+		OpenStdin:          *flStdin,
+		Memory:             flMemory,
+		CpuShares:          *flCpuShares,
+		Cpuset:             *flCpuset,
+		AttachStdin:        attachStdin,
+		AttachStdout:       attachStdout,
+		AttachStderr:       attachStderr,
+		Env:                envVariables,
+		Cmd:                runCmd,
+		Image:              image,
+		Volumes:            flVolumes.GetMap(),
+        MacAddress:         *flMacAddress,
+		Entrypoint:         entrypoint,
+		WorkingDir:         *flWorkingDir,
+		SecurityOpt:        flSecurityOpt.GetAll(),
 	}
 
 	hostConfig := &HostConfig{
@@ -272,6 +280,7 @@ func Parse(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Config,
 		ExtraHosts:      flExtraHosts.GetAll(),
 		VolumesFrom:     flVolumesFrom.GetAll(),
 		NetworkMode:     netMode,
+		IpcMode:         ipcMode,
 		Devices:         deviceMappings,
 		CapAdd:          flCapAdd.GetAll(),
 		CapDrop:         flCapDrop.GetAll(),

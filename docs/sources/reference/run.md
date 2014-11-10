@@ -50,6 +50,7 @@ following options.
  - [Container Identification](#container-identification)
      - [Name (--name)](#name-name)
      - [PID Equivalent](#pid-equivalent)
+ - [IPC Settings](#ipc-settings)
  - [Network Settings](#network-settings)
  - [Clean Up (--rm)](#clean-up-rm)
  - [Runtime Constraints on CPU and Memory](#runtime-constraints-on-cpu-and-memory)
@@ -131,7 +132,23 @@ While not strictly a means of identifying a container, you can specify a version
 image you'd like to run the container with by adding `image[:tag]` to the command. For
 example, `docker run ubuntu:14.04`.
 
-## Network Settings
+## IPC Settings
+    --ipc=""  : Set the IPC mode for the container,
+                                 'container:<name|id>': reuses another container's IPC namespace
+                                 'host': use the host's IPC namespace inside the container
+By default, all containers have the IPC namespace enabled 
+
+IPC (POSIX/SysV IPC) namespace provides separation of named shared memory segments, semaphores and message queues.  
+
+Shared memory segments are used to accelerate inter-process communication at
+memory speed, rather than through pipes or through the network stack. Shared
+memory is commonly used by databases and custom-built (typically C/OpenMPI, 
+C++/using boost libraries) high performance applications for scientific
+computing and financial services industries. If these types of applications
+are broken into multiple containers, you might need to share the IPC mechanisms
+of the containers.
+
+## Network settings
 
     --dns=[]        : Set custom dns servers for the container
     --net="bridge"  : Set the Network mode for the container

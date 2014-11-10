@@ -130,3 +130,14 @@ func UnreserveLabel(label string) error {
 	selinux.FreeLxcContexts(label)
 	return nil
 }
+
+// DupSecOpt takes an process label and returns security options that
+// can be used to set duplicate labels on future container processes
+func DupSecOpt(src string) []string {
+    return selinux.DupSecOpt(src)
+}
+// DisableSecOpt returns a security opt that can disable labeling
+// support for future container processes
+func DisableSecOpt() []string {
+    return selinux.DisableSecOpt()
+}

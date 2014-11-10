@@ -31,6 +31,7 @@ type Config struct {
 	WorkingDir      string
 	Entrypoint      []string
 	NetworkDisabled bool
+    MacAddress      string
 	OnBuild         []string
 	SecurityOpt     []string
 }
