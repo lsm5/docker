@@ -9,14 +9,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/daemon/graphdriver"
-<<<<<<< HEAD
 	"github.com/docker/docker/pkg/common"
-||||||| parent of d016db2... Modify volume mounts SELinux labels on the fly based on :Z or :z
-	"github.com/docker/docker/utils"
-=======
-	"github.com/docker/docker/utils"
 	"github.com/docker/libcontainer/mount/mode"
->>>>>>> d016db2... Modify volume mounts SELinux labels on the fly based on :Z or :z
 )
 
 type Repository struct {

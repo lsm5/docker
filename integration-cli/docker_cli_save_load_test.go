@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/docker/docker/registry"
 )
 
 // save a repo using gz compression and try to load it using stdout
@@ -164,7 +166,6 @@ func TestSaveImageId(t *testing.T) {
 		t.Fatalf("failed to tag repo: %s, %v", out, err)
 	}
 
-	idLongCmd := exec.Command(dockerBinary, "images", "-q", "--no-trunc", repoName)
 	out, _, err := runCommandWithOutput(idLongCmd)
 	if err != nil {
 		t.Fatalf("failed to get repo ID: %s, %v", out, err)
@@ -172,7 +173,8 @@ func TestSaveImageId(t *testing.T) {
 
 	cleanedLongImageID := stripTrailingCharacters(out)
 
-	idShortCmd := exec.Command(dockerBinary, "images", "-q", repoName)
+	idShortCmdFinal := fmt.Sprintf("%v images -q %v", dockerBinary, registry.INDEXNAME+"/"+repoName)
+	idShortCmd := exec.Command("bash", "-c", idShortCmdFinal)
 	out, _, err = runCommandWithOutput(idShortCmd)
 	if err != nil {
 		t.Fatalf("failed to get repo short ID: %s, %v", out, err)
@@ -180,16 +182,10 @@ func TestSaveImageId(t *testing.T) {
 
 	cleanedShortImageID := stripTrailingCharacters(out)
 
-	saveCmd := exec.Command(dockerBinary, "save", cleanedShortImageID)
-	tarCmd := exec.Command("tar", "t")
-	tarCmd.Stdin, err = saveCmd.StdoutPipe()
-	if err != nil {
-		t.Fatalf("cannot set stdout pipe for tar: %v", err)
-	}
-	grepCmd := exec.Command("grep", cleanedLongImageID)
-	grepCmd.Stdin, err = tarCmd.StdoutPipe()
-	if err != nil {
-		t.Fatalf("cannot set stdout pipe for grep: %v", err)
+	saveCmdFinal := fmt.Sprintf("%v save %v | tar t | grep %v", dockerBinary, cleanedShortImageID, cleanedLongImageID)
+	saveCmd := exec.Command("bash", "-c", saveCmdFinal)
+	if out, _, err = runCommandWithOutput(saveCmd); err != nil {
+		t.Fatalf("failed to save repo with image ID: %s, %v", cleanedShortImageID, err)
 	}
 
 	if err = tarCmd.Start(); err != nil {
