@@ -350,7 +350,7 @@ func (container *Container) setupMounts() error {
 		return err
 	} else {
 		if journalPath != "" {
-			mounts = append(mounts, execdriver.Mount{Source: journalPath, Destination: "/var/log/journal", Mode: mode.ReadWrite(), Private: true})
+			mounts = append(mounts, execdriver.Mount{Source: journalPath, Destination: journalPath, Mode: mode.ReadWrite(), Private: true})
 		}
 	}
 
