@@ -1525,7 +1525,8 @@ To download a particular image, or set of images (i.e., a repository),
 use `docker pull`:
 
     $ sudo docker pull debian
-    # will pull the debian:latest image and its intermediate layers
+    # will pull the debian:latest image, its intermediate layers
+    # and any aliases of the same id
     $ sudo docker pull debian:testing
     # will pull the image named debian:testing and any intermediate
     # layers it is based on.

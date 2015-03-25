@@ -184,6 +184,7 @@ func (s *TagStore) pullRepository(r *registry.Session, out io.Writer, repoInfo *
 
 	log.Debugf("Registering tags")
 	// If no tag has been specified, pull them all
+	var imageId string
 	if askedTag == "" {
 		for tag, id := range tagsList {
 			repoData.ImgList[id].Tag = tag
@@ -195,6 +196,7 @@ func (s *TagStore) pullRepository(r *registry.Session, out io.Writer, repoInfo *
 			out.Write(sf.FormatStatus("", " not found"))
 			return fmt.Errorf("Tag %s not found in repository %s", askedTag, repoInfo.CanonicalName)
 		}
+		imageId = id
 		repoData.ImgList[id].Tag = askedTag
 	}
 	out.Write(sf.FormatStatus("", ""))
@@ -299,7 +301,7 @@ func (s *TagStore) pullRepository(r *registry.Session, out io.Writer, repoInfo *
 
 	}
 	for tag, id := range tagsList {
-		if askedTag != "" && tag != askedTag {
+		if askedTag != "" && id != imageId {
 			continue
 		}
 		if err := s.Set(repoInfo.LocalName, tag, id, true, false); err != nil {
