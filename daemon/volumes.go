@@ -15,7 +15,6 @@ import (
 	"github.com/docker/docker/pkg/symlink"
 	"github.com/docker/docker/pkg/system"
 	"github.com/docker/docker/volumes"
-	"github.com/docker/libcontainer/label"
 )
 
 type Mount struct {
@@ -342,16 +341,6 @@ func validMountMode(mode string) bool {
 	return roModes[mode] || rwModes[mode]
 }
 
-func (container *Container) setupJournal() (string, error) {
-	path := journalPath(container.ID)
-	if path != "" {
-		if err := os.MkdirAll(path, 0755); err != nil {
-			return "", err
-		}
-	}
-	return path, nil
-}
-
 func (container *Container) setupMounts() error {
 	mounts := []execdriver.Mount{}
 
@@ -374,19 +363,6 @@ func (container *Container) setupMounts() error {
 			Writable:    container.VolumesRW[path],
 			Relabel:     container.VolumesRelabel[path],
 		})
-	}
-
-	if container.Volumes["/var"] == "" &&
-		container.Volumes["/var/log"] == "" &&
-		container.Volumes["/var/log/journal"] == "" {
-		if journalPath, err := container.setupJournal(); err != nil {
-			return err
-		} else {
-			if journalPath != "" {
-				label.Relabel(journalPath, container.MountLabel, "Z")
-				mounts = append(mounts, execdriver.Mount{Source: journalPath, Destination: journalPath, Writable: true, Private: true})
-			}
-		}
 	}
 
 	if container.ResolvConfPath != "" {
