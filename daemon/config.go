@@ -52,7 +52,6 @@ type Config struct {
 	LogConfig                   runconfig.LogConfig
 	BlockedRegistries           opts.ListOpts
 	AdditionalRegistries        opts.ListOpts
-	ConfirmDefPush              bool
 }
 
 // InstallFlags adds command-line options to the top-level flag parser for
@@ -92,7 +91,6 @@ func (config *Config) InstallFlags() {
 	flag.Var(&config.BlockedRegistries, []string{"-block-registry"}, "Don't contact given registry")
 	config.AdditionalRegistries = opts.NewListOpts(registry.ValidateIndexName)
 	flag.Var(&config.AdditionalRegistries, []string{"-add-registry"}, "Registry to query before a public one")
-	flag.BoolVar(&config.ConfirmDefPush, []string{"-confirm-def-push"}, true, "Confirm a push to default registry")
 }
 
 func getDefaultNetworkMtu() int {
