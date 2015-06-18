@@ -1,0 +1,28 @@
+{
+    "distribution": "FROM fedora",
+    "dependencies":[ 
+      "  RUN dnf -y update && dnf install -y \\",
+      "  btrfs-progs-devel \\",
+      "  btrfs-progs \\",
+      "  gcc \\", 
+      "  gcc-c++ \\",
+      "  glibc-static \\",
+      "  glibc-devel \\",
+      "  glibc-headers \\",
+      "  kernel-devel \\",
+      "  libcap-devel \\", 
+      "  libsqlite3x-devel \\",
+      "  libvirt-client \\",
+      "  make \\",
+      "  python-websocket-client \\", 
+      "  ruby \\", 
+      "  ruby-devel \\", 
+      "  sqlite-devel \\",
+      "  tar \\" ],
+    "buildtags": "ENV DOCKER_BUILDTAGS selinux",
+    "markers": [
+      "Cut for distribution specific",
+      "End dependencies cut",
+      "Cut for buildtags distribution",
+      "End buildtags cut" ]
+}
