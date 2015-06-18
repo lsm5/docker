@@ -1,0 +1,37 @@
+{
+    "distribution": "FROM fedora",
+    "dependencies":[ 
+      "  RUN dnf -y update && dnf install -y \\",
+      "  binutils \\",
+      "  btrfs-progs-devel \\",
+      "  bzip2 \\",
+      "  gcc \\", 
+      "  glibc-static \\",
+      "  kernel-devel \\",
+      "  libcap-devel \\", 
+      "  libvirt-client \\",
+      "  make \\",
+      "  net-tools \\",
+      "  php-devel \\",
+      "  python-requests \\",
+      "  python-websocket-client \\",
+      "  ruby \\",
+      "  ruby-devel \\",
+      "  tar \\",
+      "  xz \\" ],
+    "sqlite": [
+      "  RUN mkdir -p /usr/src/sqlite3 \\",
+      "    && curl -sSL https://www.sqlite.org/2015/sqlite-autoconf-3081002.tar.gz  | tar -v -C /usr/src/sqlite3 -xz",
+      "  RUN cd /usr/src/sqlite3/sqlite-autoconf-3081002 \\",
+      "    && ./configure --enable-static \\",
+      "    && make \\",
+      "    && make install \\",
+      "    && ldconfig" ],
+    "buildtags": "ENV DOCKER_BUILDTAGS selinux",
+    "markers": [
+      "Cut for distribution specific",
+      "End dependencies cut",
+      "Sqlite3 install manually",
+      "Cut for buildtags distribution",
+      "End buildtags cut" ]
+}
