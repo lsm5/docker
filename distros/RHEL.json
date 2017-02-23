@@ -1,6 +1,7 @@
 {
     "distribution": "FROM rhel",
     "dependencies":[
+      "  COPY localrepos/*.repo /etc/yum.repos.d/ ",
       "  RUN yum -y update && yum install -y \\",
       "  audit-libs-devel \\",
       "  audit-libs-static \\",
@@ -17,6 +18,8 @@
       "  golang-googlecode-sqlite-devel \\",
       "  kernel-devel \\",
       "  libcap-devel \\",
+      "  libseccomp-devel \\",
+      "  libtool-ltdl-devel \\",
       "  libvirt-client \\",
       "  libguestfs-tools \\",
       "  make \\",

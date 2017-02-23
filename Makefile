@@ -1,4 +1,4 @@
-.PHONY: all binary build build-gccgo cross default docs docs-build docs-shell shell gccgo test test-docker-py test-integration-cli test-unit validate help
+.PHONY: all binary build build-repos build-gccgo cross default docs docs-build docs-shell shell gccgo test test-docker-py test-integration-cli test-unit validate help
 
 # set the graph driver as the current graphdriver if not set
 DOCKER_GRAPHDRIVER := $(if $(DOCKER_GRAPHDRIVER),$(DOCKER_GRAPHDRIVER),$(shell docker info 2>&1 | grep "Storage Driver" | sed 's/.*: //'))
@@ -100,7 +100,12 @@ rpm: build ## build the rpm packages
 shell: build ## start a shell inside the build env
 	$(DOCKER_RUN_DOCKER) bash
 
-test: build ## run the unit, integration and docker-py tests
+build-repos: ## copy repos from localhost to container
+	rm -rf localrepos
+	mkdir localrepos
+	cp /etc/yum.repos.d/*.repo localrepos/
+
+test: build-repos build ## run the unit, integration and docker-py tests
 	$(DOCKER_RUN_DOCKER) hack/make.sh dynbinary test-unit test-integration-cli test-docker-py
 
 test-docker-py: build ## run the docker-py tests

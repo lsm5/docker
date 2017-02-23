@@ -70,6 +70,7 @@ DEFAULT_BUNDLES=(
 	binary-client
 	binary-daemon
 	dynbinary
+        build-repos
 
 	test-unit
 	test-integration-cli
