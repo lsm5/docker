@@ -105,8 +105,8 @@ build-repos: ## copy repos from localhost to container
 	mkdir localrepos
 	cp /etc/yum.repos.d/*.repo localrepos/
 
-test: build-repos build ## run the unit, integration and docker-py tests
-	$(DOCKER_RUN_DOCKER) hack/make.sh dynbinary test-unit test-integration-cli test-docker-py
+test: build-repos build ## run unit tests only, TODO: fix docker-in-docker on rhel
+	$(DOCKER_RUN_DOCKER) hack/make.sh dynbinary test-unit
 
 test-docker-py: build ## run the docker-py tests
 	$(DOCKER_RUN_DOCKER) hack/make.sh dynbinary test-docker-py
